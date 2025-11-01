@@ -10,14 +10,21 @@ class AdminSeeder extends Seeder
 {
     public function run(): void
     {
-        Admin::updateOrCreate(
-            ['email' => 'admin@test.com'],
-            [
-                'name' => 'Super Admin',
-                'password' => 'admin12345', // Let the model handle hashing
-                'first_login' => null,
-                'last_login' => null,
-            ]
-        );
+        $admin = Admin::where('email', 'admin@test.com')->first();
+        
+        if ($admin) {
+            $this->command->info('Admin already exists. Skipping creation.');
+            return;
+        }
+
+        Admin::create([
+            'name' => 'Super Admin',
+            'email' => 'admin@test.com',
+            'password' => 'admin12345', // Let the model handle hashing
+            'first_login' => null,
+            'last_login' => null,
+        ]);
+        
+        $this->command->info('Admin created successfully.');
     }
 }

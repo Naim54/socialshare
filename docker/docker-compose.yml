@@ -1,0 +1,79 @@
+services:
+  socialshare-php-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: php
+    container_name: socialshare-php-container
+    volumes:
+      - ../laravel:/var/www
+    environment:
+      - REDIS_HOST=socialshare-redis-service
+      - REDIS_PORT=6379
+      - DB_HOST=socialshare-db-service
+      - DB_PORT=3306
+      - DB_DATABASE=socialshare
+      - DB_USERNAME=socialshare
+      - DB_PASSWORD=socialshare
+    networks:
+      - socialshare-network
+
+  socialshare-nginx-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: nginx
+    container_name: socialshare-nginx-container
+    ports:
+      - "8080:80"
+    volumes:
+      - ../laravel:/var/www
+      - ../nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - socialshare-php-service
+    networks:
+      - socialshare-network
+
+  socialshare-db-service:
+    image: mysql:8.0
+    container_name: socialshare-db-container
+    environment:
+      MYSQL_DATABASE: socialshare
+      MYSQL_USER: socialshare
+      MYSQL_PASSWORD: socialshare
+      MYSQL_ROOT_PASSWORD: socialshare
+    volumes:
+      - socialshare-dbdata-volume:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    networks:
+      - socialshare-network
+
+  socialshare-phpmyadmin-service:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: socialshare-phpmyadmin-container
+    environment:
+      PMA_HOST: socialshare-db-service
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: socialshare
+    ports:
+      - "8081:80"
+    depends_on:
+      - socialshare-db-service
+    networks:
+      - socialshare-network
+
+  socialshare-redis-service:
+    image: redis:latest
+    container_name: socialshare-redis-container
+    ports:
+      - "6379:6379"
+    networks:
+      - socialshare-network
+
+networks:
+  socialshare-network:
+    driver: bridge
+
+volumes:
+  socialshare-dbdata-volume:

@@ -5,7 +5,220 @@
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
+@plugin "daisyui" {
+  themes: light --default, dark --prefersdark;
+}
+
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/* Custom styles for SocialShare */
+/* Sidebar transition */
+#sidebar {
+    transition: width 0.3s ease;
+}
+
+/* Hide text in compact sidebar */
+#sidebar.w-20 .sidebar-text {
+    display: none;
+}
+
+/* Center icons in compact sidebar */
+#sidebar.w-20 .sidebar-link {
+    justify-content: center;
+}
+
+/* Article grid layout */
+.article-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.75rem;
+}
+
+@media (max-width: 768px) {
+    .article-grid {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+    }
+}
+
+/* Chrome-style Pagination */
+[role="navigation"][aria-label="Pagination Navigation"] {
+    user-select: none;
+}
+
+[role="navigation"][aria-label="Pagination Navigation"] button,
+[role="navigation"][aria-label="Pagination Navigation"] a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+
+[role="navigation"][aria-label="Pagination Navigation"] button:hover:not(:disabled),
+[role="navigation"][aria-label="Pagination Navigation"] a:hover {
+    background-color: hsl(var(--b3) / 0.5);
+}
+
+[role="navigation"][aria-label="Pagination Navigation"] button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+[role="navigation"][aria-label="Pagination Navigation"] button[aria-current="page"] {
+    font-weight: 500;
+}
+
+/* Highlight Banner Animation */
+.highlight-banner {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+}
+
+.highlight-banner .highlight-track {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 2rem; /* 32px gap between items */
+    animation: marquee 30s linear infinite;
+    will-change: transform;
+}
+
+.highlight-banner:hover .highlight-track {
+    animation-play-state: paused;
+}
+
+.highlight-item {
+    cursor: pointer;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.highlight-item:hover {
+    opacity: 0.8;
+}
+
+@keyframes marquee {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/* Reduce animation on mobile for better performance */
+@media (prefers-reduced-motion: reduce) {
+    .highlight-banner .highlight-track {
+        animation: none;
+    }
+}
+
+/* Hero Slider */
+.hero-slider-container {
+    width: 100%;
+    margin-bottom: 1.5rem;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    position: relative;
+}
+
+.hero-slider-track {
+    display: flex;
+    transition: transform 0.8s ease-in-out;
+}
+
+.hero-slide,
+a.hero-slide {
+    min-width: 100%;
+    position: relative;
+    aspect-ratio: 16 / 1.125;
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.hero-slide-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%);
+}
+
+.hero-slide-content h2 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: white;
+    line-height: 1.2;
+    margin-bottom: 0;
+}
+
+.hero-dots {
+    position: absolute;
+    bottom: 0.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.5rem;
+}
+
+.hero-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    background-color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.hero-dot.active {
+    background-color: white;
+}
+
+@media (min-width: 768px) {
+    .hero-slide-content h2 {
+        font-size: 1.25rem;
+    }
+}
+
+/* Article Detail Page Styles */
+.article-content {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.article-body p {
+    margin-bottom: 1.5rem;
+    line-height: 1.8;
+}
+
+.article-body p:first-of-type {
+    font-size: 1.25rem;
+    color: hsl(var(--bc) / 0.95);
+    font-weight: 500;
+    margin-bottom: 2rem;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Smooth scroll behavior */
+html {
+    scroll-behavior: smooth;
 }

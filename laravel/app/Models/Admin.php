@@ -31,4 +31,12 @@ class Admin extends Authenticatable
     ];
 
     // Remove the setPasswordAttribute method since we're using 'hashed' cast
+
+    /**
+     * Get API tokens for this admin
+     */
+    public function apiTokens()
+    {
+        return $this->hasMany(ApiToken::class);
+    }
 }

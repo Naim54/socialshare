@@ -1,335 +1,225 @@
 @extends('layouts.app')
 
-@section('title', 'Berita Malaysia - Portal Berita Terkini')
+@section('title', 'SocialShare - Your News, Your Way')
+
+@section('sidebar')
+    @include('partials.sidebar')
+@endsection
 
 @section('content')
-<!-- Hero Section -->
-<section class="bg-secondary text-light py-20">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div class="animate-fade-in-up">
-            <h1 class="text-5xl md:text-6xl font-bold mb-6">
-                Berita Malaysia
-            </h1>
-            <p class="text-xl md:text-2xl mb-8 text-accent max-w-3xl mx-auto">
-                Portal berita terkini dan terpercaya untuk rakyat Malaysia
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="/berita" class="bg-accent text-primary px-8 py-4 rounded-lg font-bold text-lg hover:bg-light hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300">
-                    <i class="fas fa-newspaper mr-2"></i>Baca Berita Terkini
-                </a>
-                <a href="#news" class="border-2 border-accent text-accent px-8 py-4 rounded-lg font-bold text-lg hover:bg-accent hover:text-primary transition-all duration-300">
-                    <i class="fas fa-arrow-down mr-2"></i>Lihat Cerita
-                </a>
-            </div>
-        </div>
-    </div>
-</section>
+    <!-- Breaking News Section (Partial) -->
+    @include('partials.breaking-news', ['breakingNews' => $breakingNews])
 
-<!-- Main Content -->
-<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16" id="news">
-    <!-- Featured News Section -->
-    <div class="mb-16">
-        <div class="text-center mb-12">
-            <h2 class="text-4xl font-bold text-primary mb-4">
-                <i class="fas fa-star text-accent mr-3"></i>Cerita Utama
-            </h2>
-            <p class="text-secondary text-lg">Berita terhangat dan paling penting untuk anda</p>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <!-- News Card 1 -->
-            <article class="bg-white rounded-xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 overflow-hidden border border-accent/20">
-                <div class="relative">
-                    <img src="https://images.unsplash.com/photo-1586339949916-3e9457bef6d3?w=500&h=300&fit=crop" 
-                         alt="Berita Utama" 
-                         class="w-full h-48 object-cover">
-                    <div class="absolute top-4 left-4">
-                        <span class="bg-accent text-primary px-3 py-1 rounded-full text-sm font-semibold">
-                            <i class="fas fa-fire mr-1"></i>HOT
-                        </span>
-                    </div>
-                </div>
-                <div class="p-6">
-                    <h3 class="text-xl font-bold text-primary mb-3 line-clamp-2">
-                        PM Anwar Ibrahim Umumkan Rancangan Ekonomi Baru
-                    </h3>
-                    <p class="text-secondary mb-4 line-clamp-3">
-                        Perdana Menteri Malaysia mengumumkan pelan ekonomi komprehensif untuk meningkatkan pertumbuhan negara dan mengurangkan kos sara hidup rakyat.
-                    </p>
-                    <div class="flex items-center text-sm text-secondary mb-4">
-                        <i class="fas fa-clock mr-2 text-accent"></i>
-                        <span>2 jam yang lalu</span>
-                        <span class="mx-2">•</span>
-                        <span class="bg-primary text-light px-2 py-1 rounded text-xs">Berita</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <a href="/berita" class="text-accent hover:text-primary font-semibold transition-colors">
-                            Baca Selanjutnya <i class="fas fa-arrow-right ml-1"></i>
-                        </a>
-                        <div class="flex space-x-2">
-                            <a href="#" class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors">
-                                <i class="fab fa-facebook-f text-sm"></i>
-                            </a>
-                            <a href="#" class="w-8 h-8 bg-blue-400 text-white rounded-full flex items-center justify-center hover:bg-blue-500 transition-colors">
-                                <i class="fab fa-twitter text-sm"></i>
-                            </a>
-                            <a href="#" class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center hover:bg-green-600 transition-colors">
-                                <i class="fab fa-whatsapp text-sm"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </article>
+    <!-- Featured Stories Section (Partial) -->
+    @include('partials.featured-stories', ['featuredArticles' => $featuredArticles])
 
-            <!-- News Card 2 -->
-            <article class="bg-white rounded-xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 overflow-hidden border border-accent/20">
-                <div class="relative">
-                    <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=300&fit=crop" 
-                         alt="Sukan" 
-                         class="w-full h-48 object-cover">
-                    <div class="absolute top-4 left-4">
-                        <span class="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                            <i class="fas fa-trophy mr-1"></i>SPORT
-                        </span>
-                    </div>
-                </div>
-                <div class="p-6">
-                    <h3 class="text-xl font-bold text-primary mb-3 line-clamp-2">
-                        Harimau Malaya Menang 3-1 Lawan Singapura
-                    </h3>
-                    <p class="text-secondary mb-4 line-clamp-3">
-                        Pasukan bola sepak kebangsaan Malaysia mencatat kemenangan gemilang dalam perlawanan persahabatan menentang Singapura di Stadium Nasional Bukit Jalil.
-                    </p>
-                    <div class="flex items-center text-sm text-secondary mb-4">
-                        <i class="fas fa-clock mr-2 text-accent"></i>
-                        <span>4 jam yang lalu</span>
-                        <span class="mx-2">•</span>
-                        <span class="bg-green-500 text-white px-2 py-1 rounded text-xs">Sukan</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <a href="/sukan" class="text-accent hover:text-primary font-semibold transition-colors">
-                            Baca Selanjutnya <i class="fas fa-arrow-right ml-1"></i>
-                        </a>
-                        <div class="flex space-x-2">
-                            <a href="#" class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors">
-                                <i class="fab fa-facebook-f text-sm"></i>
-                            </a>
-                            <a href="#" class="w-8 h-8 bg-blue-400 text-white rounded-full flex items-center justify-center hover:bg-blue-500 transition-colors">
-                                <i class="fab fa-twitter text-sm"></i>
-                            </a>
-                            <a href="#" class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center hover:bg-green-600 transition-colors">
-                                <i class="fab fa-whatsapp text-sm"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </article>
-
-            <!-- News Card 3 -->
-            <article class="bg-white rounded-xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 overflow-hidden border border-accent/20">
-                <div class="relative">
-                    <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&h=300&fit=crop" 
-                         alt="Hiburan" 
-                         class="w-full h-48 object-cover">
-                    <div class="absolute top-4 left-4">
-                        <span class="bg-purple-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                            <i class="fas fa-music mr-1"></i>ENTERTAINMENT
-                        </span>
-                    </div>
-                </div>
-                <div class="p-6">
-                    <h3 class="text-xl font-bold text-primary mb-3 line-clamp-2">
-                        Konsert Dato' Siti Nurhaliza Dijual Habis
-                    </h3>
-                    <p class="text-secondary mb-4 line-clamp-3">
-                        Konsert solo terbaru Dato' Siti Nurhaliza di Stadium Merdeka berjaya dijual habis dalam masa 2 jam sahaja, membuktikan populariti penyanyi terkenal itu.
-                    </p>
-                    <div class="flex items-center text-sm text-secondary mb-4">
-                        <i class="fas fa-clock mr-2 text-accent"></i>
-                        <span>6 jam yang lalu</span>
-                        <span class="mx-2">•</span>
-                        <span class="bg-purple-500 text-white px-2 py-1 rounded text-xs">Hiburan</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <a href="/hiburan" class="text-accent hover:text-primary font-semibold transition-colors">
-                            Baca Selanjutnya <i class="fas fa-arrow-right ml-1"></i>
-                        </a>
-                        <div class="flex space-x-2">
-                            <a href="#" class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors">
-                                <i class="fab fa-facebook-f text-sm"></i>
-                            </a>
-                            <a href="#" class="w-8 h-8 bg-blue-400 text-white rounded-full flex items-center justify-center hover:bg-blue-500 transition-colors">
-                                <i class="fab fa-twitter text-sm"></i>
-                            </a>
-                            <a href="#" class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center hover:bg-green-600 transition-colors">
-                                <i class="fab fa-whatsapp text-sm"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </article>
-
-            <!-- News Card 4 -->
-            <article class="bg-white rounded-xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 overflow-hidden border border-accent/20">
-                <div class="relative">
-                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&h=300&fit=crop" 
-                         alt="Dunia" 
-                         class="w-full h-48 object-cover">
-                    <div class="absolute top-4 left-4">
-                        <span class="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                            <i class="fas fa-globe mr-1"></i>WORLD
-                        </span>
-                    </div>
-                </div>
-                <div class="p-6">
-                    <h3 class="text-xl font-bold text-primary mb-3 line-clamp-2">
-                        Malaysia Tegaskan Komitmen Terhadap ASEAN
-                    </h3>
-                    <p class="text-secondary mb-4 line-clamp-3">
-                        Menteri Luar Negeri Malaysia menegaskan komitmen negara terhadap kerjasama ASEAN dalam menangani cabaran serantau dan global.
-                    </p>
-                    <div class="flex items-center text-sm text-secondary mb-4">
-                        <i class="fas fa-clock mr-2 text-accent"></i>
-                        <span>8 jam yang lalu</span>
-                        <span class="mx-2">•</span>
-                        <span class="bg-blue-500 text-white px-2 py-1 rounded text-xs">Dunia</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <a href="/dunia" class="text-accent hover:text-primary font-semibold transition-colors">
-                            Baca Selanjutnya <i class="fas fa-arrow-right ml-1"></i>
-                        </a>
-                        <div class="flex space-x-2">
-                            <a href="#" class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors">
-                                <i class="fab fa-facebook-f text-sm"></i>
-                            </a>
-                            <a href="#" class="w-8 h-8 bg-blue-400 text-white rounded-full flex items-center justify-center hover:bg-blue-500 transition-colors">
-                                <i class="fab fa-twitter text-sm"></i>
-                            </a>
-                            <a href="#" class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center hover:bg-green-600 transition-colors">
-                                <i class="fab fa-whatsapp text-sm"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </article>
-
-            <!-- News Card 5 -->
-            <article class="bg-white rounded-xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 overflow-hidden border border-accent/20">
-                <div class="relative">
-                    <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=500&h=300&fit=crop" 
-                         alt="Teknologi" 
-                         class="w-full h-48 object-cover">
-                    <div class="absolute top-4 left-4">
-                        <span class="bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                            <i class="fas fa-microchip mr-1"></i>TECH
-                        </span>
-                    </div>
-                </div>
-                <div class="p-6">
-                    <h3 class="text-xl font-bold text-primary mb-3 line-clamp-2">
-                        Malaysia Akan Jadi Hub Teknologi Digital ASEAN
-                    </h3>
-                    <p class="text-secondary mb-4 line-clamp-3">
-                        Kerajaan Malaysia mengumumkan pelan untuk menjadikan negara sebagai pusat teknologi digital terkemuka di rantau ASEAN menjelang 2030.
-                    </p>
-                    <div class="flex items-center text-sm text-secondary mb-4">
-                        <i class="fas fa-clock mr-2 text-accent"></i>
-                        <span>10 jam yang lalu</span>
-                        <span class="mx-2">•</span>
-                        <span class="bg-orange-500 text-white px-2 py-1 rounded text-xs">Teknologi</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <a href="/berita" class="text-accent hover:text-primary font-semibold transition-colors">
-                            Baca Selanjutnya <i class="fas fa-arrow-right ml-1"></i>
-                        </a>
-                        <div class="flex space-x-2">
-                            <a href="#" class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors">
-                                <i class="fab fa-facebook-f text-sm"></i>
-                            </a>
-                            <a href="#" class="w-8 h-8 bg-blue-400 text-white rounded-full flex items-center justify-center hover:bg-blue-500 transition-colors">
-                                <i class="fab fa-twitter text-sm"></i>
-                            </a>
-                            <a href="#" class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center hover:bg-green-600 transition-colors">
-                                <i class="fab fa-whatsapp text-sm"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </article>
-
-            <!-- News Card 6 -->
-            <article class="bg-white rounded-xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 overflow-hidden border border-accent/20">
-                <div class="relative">
-                    <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=300&fit=crop" 
-                         alt="Sukan" 
-                         class="w-full h-48 object-cover">
-                    <div class="absolute top-4 left-4">
-                        <span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                            <i class="fas fa-trophy mr-1"></i>CHAMPION
-                        </span>
-                    </div>
-                </div>
-                <div class="p-6">
-                    <h3 class="text-xl font-bold text-primary mb-3 line-clamp-2">
-                        Pemain Badminton Malaysia Juara Kejohanan Dunia
-                    </h3>
-                    <p class="text-secondary mb-4 line-clamp-3">
-                        Pemain badminton kebangsaan Malaysia berjaya meraih gelaran juara dunia dalam kategori perseorangan lelaki di Kejohanan Badminton Dunia 2024.
-                    </p>
-                    <div class="flex items-center text-sm text-secondary mb-4">
-                        <i class="fas fa-clock mr-2 text-accent"></i>
-                        <span>12 jam yang lalu</span>
-                        <span class="mx-2">•</span>
-                        <span class="bg-red-500 text-white px-2 py-1 rounded text-xs">Sukan</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <a href="/sukan" class="text-accent hover:text-primary font-semibold transition-colors">
-                            Baca Selanjutnya <i class="fas fa-arrow-right ml-1"></i>
-                        </a>
-                        <div class="flex space-x-2">
-                            <a href="#" class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors">
-                                <i class="fab fa-facebook-f text-sm"></i>
-                            </a>
-                            <a href="#" class="w-8 h-8 bg-blue-400 text-white rounded-full flex items-center justify-center hover:bg-blue-500 transition-colors">
-                                <i class="fab fa-twitter text-sm"></i>
-                            </a>
-                            <a href="#" class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center hover:bg-green-600 transition-colors">
-                                <i class="fab fa-whatsapp text-sm"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </article>
-        </div>
+    <!-- Article Grid Section (Partial - Can be reloaded via AJAX) -->
+    <div id="article-grid-container">
+        @include('partials.article-grid', ['articles' => $articles])
     </div>
 
-    <!-- Category Quick Access -->
-    <div class="bg-white rounded-xl shadow-lg p-8">
-        <h3 class="text-2xl font-bold text-primary mb-6 text-center">
-            <i class="fas fa-th-large text-accent mr-2"></i>Kategori Berita
-        </h3>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <a href="/berita" class="bg-primary text-light p-6 rounded-lg text-center hover:bg-secondary transform hover:-translate-y-1 transition-all duration-300 group">
-                <i class="fas fa-newspaper text-3xl mb-3 group-hover:scale-110 transition-transform"></i>
-                <h4 class="font-bold text-lg">Berita</h4>
-                <p class="text-sm opacity-90">Berita terkini</p>
-            </a>
-            <a href="/sukan" class="bg-green-500 text-white p-6 rounded-lg text-center hover:bg-green-600 transform hover:-translate-y-1 transition-all duration-300 group">
-                <i class="fas fa-futbol text-3xl mb-3 group-hover:scale-110 transition-transform"></i>
-                <h4 class="font-bold text-lg">Sukan</h4>
-                <p class="text-sm opacity-90">Sukan & Olahraga</p>
-            </a>
-            <a href="/hiburan" class="bg-purple-500 text-white p-6 rounded-lg text-center hover:bg-purple-600 transform hover:-translate-y-1 transition-all duration-300 group">
-                <i class="fas fa-music text-3xl mb-3 group-hover:scale-110 transition-transform"></i>
-                <h4 class="font-bold text-lg">Hiburan</h4>
-                <p class="text-sm opacity-90">Hiburan & Artis</p>
-            </a>
-            <a href="/dunia" class="bg-blue-500 text-white p-6 rounded-lg text-center hover:bg-blue-600 transform hover:-translate-y-1 transition-all duration-300 group">
-                <i class="fas fa-globe text-3xl mb-3 group-hover:scale-110 transition-transform"></i>
-                <h4 class="font-bold text-lg">Dunia</h4>
-                <p class="text-sm opacity-90">Berita Dunia</p>
-            </a>
-        </div>
-    </div>
-</main>
+    <!-- Heard The News Section (Partial) -->
+    @include('partials.heard-the-news', ['heardTheNews' => $heardTheNews])
 @endsection
+
+@push('scripts')
+<script>
+    // Breaking News Marquee - Initialize auto-scroll
+    document.addEventListener('DOMContentLoaded', () => {
+        const highlightTrack = document.getElementById('highlight-track');
+        if (highlightTrack) {
+            // Wait for layout to calculate proper widths
+            setTimeout(() => {
+                // Get all items
+                const items = highlightTrack.querySelectorAll('.highlight-item');
+                const itemCount = items.length;
+                const firstHalfCount = itemCount / 2;
+                
+                // Create a temporary container to measure first half width accurately
+                const firstHalf = Array.from(items).slice(0, firstHalfCount);
+                let firstHalfWidth = 0;
+                
+                // Measure each item including gaps (gap is applied by CSS flexbox)
+                firstHalf.forEach((item) => {
+                    const rect = item.getBoundingClientRect();
+                    firstHalfWidth += rect.width;
+                });
+                
+                // Get computed gap value from CSS
+                const computedStyle = window.getComputedStyle(highlightTrack);
+                const gap = parseFloat(computedStyle.gap) || 32; // Default to 32px if gap not found
+                
+                // Calculate: first half width + gaps between items + second half width + gaps
+                // For firstHalfCount items, there are (firstHalfCount - 1) gaps
+                const gapsInFirstHalf = (firstHalfCount - 1) * gap;
+                const firstHalfTotal = firstHalfWidth + gapsInFirstHalf;
+                
+                // Total width = first half + one gap + second half (which is duplicate of first half)
+                // This ensures seamless looping
+                highlightTrack.style.width = `${(firstHalfTotal * 2) + gap}px`;
+            }, 100);
+            
+            // Pause on hover (CSS handles this too, but JS ensures it works)
+            const banner = highlightTrack.closest('.highlight-banner');
+            if (banner) {
+                banner.addEventListener('mouseenter', () => {
+                    highlightTrack.style.animationPlayState = 'paused';
+                });
+                banner.addEventListener('mouseleave', () => {
+                    highlightTrack.style.animationPlayState = 'running';
+                });
+            }
+        }
+    });
+
+    // Hero Slider
+    document.addEventListener('DOMContentLoaded', () => {
+        const slider = document.getElementById('hero-slider');
+        if (slider) {
+            const track = slider.querySelector('.hero-slider-track');
+            const slides = Array.from(track.querySelectorAll('.hero-slide'));
+            const dots = Array.from(slider.querySelectorAll('.hero-dot'));
+            const slideCount = slides.length;
+            let currentSlide = 0;
+            let autoScrollInterval;
+
+            if (slideCount === 0) return;
+
+            track.style.width = `${slideCount * 100}%`;
+
+            function goToSlide(slideIndex) {
+                if (slideIndex < 0 || slideIndex >= slideCount) return;
+                
+                track.style.transform = `translateX(-${slideIndex * (100 / slideCount)}%)`;
+                
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === slideIndex);
+                });
+                
+                currentSlide = slideIndex;
+            }
+
+            function nextSlide() {
+                const nextSlideIndex = (currentSlide + 1) % slideCount;
+                goToSlide(nextSlideIndex);
+            }
+
+            function startAutoScroll() {
+                stopAutoScroll();
+                autoScrollInterval = setInterval(nextSlide, 5000);
+            }
+
+            function stopAutoScroll() {
+                clearInterval(autoScrollInterval);
+            }
+
+            dots.forEach(dot => {
+                dot.addEventListener('click', () => {
+                    const slideIndex = parseInt(dot.dataset.slide, 10);
+                    goToSlide(slideIndex);
+                });
+            });
+
+            slider.addEventListener('mouseenter', stopAutoScroll);
+            slider.addEventListener('mouseleave', startAutoScroll);
+
+            goToSlide(0);
+            startAutoScroll();
+        }
+    });
+
+    // AJAX Pagination
+    document.addEventListener('DOMContentLoaded', function() {
+        const articleGridContainer = document.getElementById('article-grid-container');
+        
+        if (!articleGridContainer) return;
+
+        // Function to handle pagination clicks
+        async function handlePaginationClick(e) {
+            // Find the clicked link
+            const link = e.target.closest('a');
+            if (!link) return;
+            
+            // Check if it's a pagination link (inside pagination nav or has page in URL)
+            const paginationNav = link.closest('[role="navigation"][aria-label="Pagination Navigation"]');
+            const isPaginationLink = paginationNav && (
+                link.href.includes('?page=') || 
+                link.href.includes('/page/') ||
+                link.getAttribute('aria-label')?.includes('page') ||
+                link.getAttribute('aria-label')?.includes('Previous') ||
+                link.getAttribute('aria-label')?.includes('Next')
+            );
+            
+            if (!isPaginationLink) return;
+            
+            e.preventDefault();
+            
+            const url = link.href;
+            
+            // Show loading state
+            articleGridContainer.style.opacity = '0.6';
+            articleGridContainer.style.transition = 'opacity 0.2s';
+            articleGridContainer.style.pointerEvents = 'none';
+            
+            try {
+                // Make AJAX request
+                const response = await fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'text/html'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                
+                const html = await response.text();
+                
+                // Update the article grid container
+                articleGridContainer.innerHTML = html;
+                
+                // Scroll to top of article grid smoothly
+                articleGridContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                // Update browser history without reload
+                window.history.pushState({ path: url }, '', url);
+                
+            } catch (error) {
+                console.error('Error loading articles:', error);
+                alert('Failed to load articles. Please try again.');
+            } finally {
+                // Remove loading state
+                articleGridContainer.style.opacity = '1';
+                articleGridContainer.style.pointerEvents = 'auto';
+            }
+        }
+
+        // Use event delegation for pagination links
+        document.addEventListener('click', handlePaginationClick);
+
+        // Handle browser back/forward buttons
+        window.addEventListener('popstate', async function(e) {
+            const url = window.location.href;
+            
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'text/html'
+                    }
+                });
+                
+                if (response.ok) {
+                    const html = await response.text();
+                    articleGridContainer.innerHTML = html;
+                }
+            } catch (error) {
+                console.error('Error loading articles:', error);
+                // Fallback to full page reload
+                window.location.reload();
+            }
+        });
+    });
+</script>
+@endpush

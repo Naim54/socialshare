@@ -1,68 +1,68 @@
 <!DOCTYPE html>
-<html lang="ms">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Berita Malaysia - Portal Berita Terkini')</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary': '#213555',
-                        'secondary': '#3E5879',
-                        'accent': '#D8C4B6',
-                        'light': '#F5EFE7'
-                    },
-                    fontFamily: {
-                        'sans': ['Inter', 'system-ui', 'sans-serif']
-                    }
-                }
-            }
-        }
-    </script>
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:300,400,500,600,700,800" rel="stylesheet" />
-    @yield('styles')
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', 'SocialShare - Your News, Your Way')</title>
+    
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="font-sans bg-light text-primary">
-    @include('components.navbar')
+<body class="flex flex-col @yield('body-class', 'h-screen') bg-base-100 text-base-content">
+
+    @include('partials.navbar')
+
+    <!-- Main Content Area -->
+    <div class="flex flex-1 @yield('content-wrapper-class', 'overflow-hidden')">
+        
+        @yield('sidebar')
+        
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto @yield('main-class', 'p-6 bg-base-100') pb-16 md:pb-20">
+            @yield('content')
+        </main>
+    </div>
+
+    @stack('scripts')
     
-    @yield('content')
-    
-    @include('components.footer')
-    
-    @yield('scripts')
-    
-    <style>
-        .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+    <script>
+        // Sidebar Toggle
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+
+        if (menuToggle && sidebar) {
+            menuToggle.addEventListener('click', () => {
+                if (sidebar.classList.contains('w-64')) {
+                    sidebar.classList.remove('w-64');
+                    sidebar.classList.add('w-20');
+                } else {
+                    sidebar.classList.remove('w-20');
+                    sidebar.classList.add('w-64');
+                }
+            });
         }
-        .line-clamp-3 {
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        .animate-fade-in-up {
-            animation: fadeInUp 1s ease-out;
-        }
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
+
+        // Theme Toggle with DaisyUI - Initialize from saved preference
+        document.addEventListener('DOMContentLoaded', () => {
+            const html = document.documentElement;
+            const themeToggle = document.getElementById('theme-toggle');
+            
+            // Get saved theme or default to dark
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            html.setAttribute('data-theme', savedTheme);
+            
+            // Set checkbox state based on saved theme (checked = light, unchecked = dark)
+            if (themeToggle) {
+                themeToggle.checked = savedTheme === 'light';
+                
+                // Listen for theme toggle changes
+                themeToggle.addEventListener('change', (e) => {
+                    const newTheme = e.target.checked ? 'light' : 'dark';
+                    html.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
             }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-    </style>
+        });
+    </script>
 </body>
 </html>
-

@@ -6,7 +6,7 @@
                 <i class="fas fa-newspaper mr-2"></i>
                 Berita Malaysia
             </div>
-            <p class="text-accent mb-6">Portal berita terkini dan terpercaya untuk rakyat Malaysia</p>
+            <p class="text-accent mb-6">Portal berita terkini untuk rakyat Malaysia</p>
             <div class="flex justify-center space-x-6 mb-6">
                 <a href="#" class="text-accent hover:text-light transition-colors">
                     <i class="fab fa-facebook-f text-2xl"></i>

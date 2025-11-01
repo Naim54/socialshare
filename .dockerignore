@@ -1,0 +1,51 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Docker
+docker/
+.dockerignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Laravel specific
+laravel/vendor/
+laravel/node_modules/
+laravel/.env
+laravel/.env.*
+laravel/storage/*
+!laravel/storage/.gitkeep
+laravel/storage/logs/*
+laravel/storage/framework/cache/*
+laravel/storage/framework/sessions/*
+laravel/storage/framework/views/*
+laravel/bootstrap/cache/*
+!laravel/bootstrap/cache/.gitkeep
+
+# NPM
+laravel/node_modules/
+npm-debug.log
+yarn-error.log
+
+# Build artifacts (these will be built in Docker)
+laravel/public/hot
+laravel/public/build
+
+# Tests
+laravel/tests/
+laravel/.phpunit.result.cache
+
+# Documentation
+README.md
+*.md
+
