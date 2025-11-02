@@ -43,7 +43,7 @@
                 <a href="{{ route('article.show', $article->slug) }}" class="card bg-base-200 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden border border-base-300 rounded-xl">
                     <figure class="relative overflow-hidden bg-base-300 aspect-video">
                         <img 
-                            src="{{ $article->featured_image }}" 
+                            src="{{ $article->featured_image_url }}" 
                             alt="{{ $article->title }}" 
                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
                             loading="lazy"

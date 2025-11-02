@@ -53,10 +53,13 @@
         <aside class="w-64 bg-white dark:bg-dark-800 shadow-lg sidebar-transition theme-transition flex-shrink-0">
             <div class="p-6 h-full flex flex-col">
                 <div class="flex items-center space-x-3 mb-8">
-                    <div class="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-share-alt text-white text-sm"></i>
-                    </div>
-                    <span class="text-xl font-bold text-gray-900 dark:text-white theme-transition">SocialShare</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600 dark:text-indigo-400">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    <span class="text-xl font-bold text-gray-900 dark:text-white theme-transition tracking-tight">SocialShare</span>
                 </div>
                 
                 <!-- Navigation Menu -->

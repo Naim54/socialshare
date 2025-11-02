@@ -1,11 +1,12 @@
 @if($articles->count() > 0)
 <div class="mb-8" id="article-grid-section">
+    <h2 class="text-lg font-semibold mb-4">Latest Articles</h2>
     <div class="article-grid">
         @foreach($articles as $article)
         <a href="{{ route('article.show', $article->slug) }}" class="card bg-base-200 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden border border-base-300">
             <figure class="relative overflow-hidden bg-base-300">
                 <img 
-                    src="{{ $article->featured_image }}" 
+                    src="{{ $article->featured_image_url }}" 
                     alt="{{ $article->title }}" 
                     class="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500" 
                     loading="lazy"

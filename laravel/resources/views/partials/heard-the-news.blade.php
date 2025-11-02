@@ -5,12 +5,7 @@
         @foreach($heardTheNews as $article)
         <a href="{{ route('article.show', $article->slug) }}" class="card bg-base-200 shadow-lg hover:shadow-xl transition-shadow cursor-pointer group">
             <figure class="relative overflow-hidden">
-                <img src="{{ $article->featured_image }}" alt="{{ $article->title }}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" />
-                @if($article->source)
-                <div class="absolute top-2 left-2">
-                    <div class="badge badge-primary">{{ $article->source }}</div>
-                </div>
-                @endif
+                <img src="{{ $article->featured_image_url }}" alt="{{ $article->title }}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" />
             </figure>
             <div class="card-body p-4">
                 <div class="text-xs text-base-content/60 mb-1">{{ ucfirst($article->category) }}</div>

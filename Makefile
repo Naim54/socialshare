@@ -30,6 +30,7 @@ help:
 	@echo "  make seed           - Run database seeders"
 	@echo "  make test           - Run PHPUnit tests"
 	@echo "  make key            - Generate application key"
+	@echo "  make storage-link   - Create storage symlink"
 	@echo "  make cache          - Clear and cache config/routes"
 	@echo "  make optimize       - Optimize Laravel for production"
 	@echo "  make clean          - Clean Docker resources (containers, volumes, images)"
@@ -113,6 +114,10 @@ seed:
 key:
 	@echo "Generating application key..."
 	$(DOCKER_COMPOSE) exec socialshare-php-service php artisan key:generate
+
+storage-link:
+	@echo "Creating storage symlink..."
+	$(DOCKER_COMPOSE) exec socialshare-php-service php artisan storage:link
 
 cache:
 	@echo "Clearing and caching config/routes..."

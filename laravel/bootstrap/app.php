@@ -17,6 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'auth.api' => \App\Http\Middleware\AuthenticateApi::class,
+            'track.visit' => \App\Http\Middleware\TrackVisit::class,
+        ]);
+        
+        // Apply visit tracking to web routes
+        $middleware->web(append: [
+            \App\Http\Middleware\TrackVisit::class,
         ]);
     })
     ->withProviders([

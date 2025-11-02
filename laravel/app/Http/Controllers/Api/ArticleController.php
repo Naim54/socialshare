@@ -171,7 +171,7 @@ class ArticleController extends Controller
             'title' => $article->title,
             'excerpt' => $article->excerpt,
             'slug' => $article->slug,
-            'featured_image' => $article->featured_image,
+            'featured_image' => $article->featured_image_url,
             'category' => $article->category,
             'category_badge_color' => $article->category_badge_color,
             'type' => $article->type,

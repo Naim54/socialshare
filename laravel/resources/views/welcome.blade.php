@@ -72,61 +72,6 @@
         }
     });
 
-    // Hero Slider
-    document.addEventListener('DOMContentLoaded', () => {
-        const slider = document.getElementById('hero-slider');
-        if (slider) {
-            const track = slider.querySelector('.hero-slider-track');
-            const slides = Array.from(track.querySelectorAll('.hero-slide'));
-            const dots = Array.from(slider.querySelectorAll('.hero-dot'));
-            const slideCount = slides.length;
-            let currentSlide = 0;
-            let autoScrollInterval;
-
-            if (slideCount === 0) return;
-
-            track.style.width = `${slideCount * 100}%`;
-
-            function goToSlide(slideIndex) {
-                if (slideIndex < 0 || slideIndex >= slideCount) return;
-                
-                track.style.transform = `translateX(-${slideIndex * (100 / slideCount)}%)`;
-                
-                dots.forEach((dot, index) => {
-                    dot.classList.toggle('active', index === slideIndex);
-                });
-                
-                currentSlide = slideIndex;
-            }
-
-            function nextSlide() {
-                const nextSlideIndex = (currentSlide + 1) % slideCount;
-                goToSlide(nextSlideIndex);
-            }
-
-            function startAutoScroll() {
-                stopAutoScroll();
-                autoScrollInterval = setInterval(nextSlide, 5000);
-            }
-
-            function stopAutoScroll() {
-                clearInterval(autoScrollInterval);
-            }
-
-            dots.forEach(dot => {
-                dot.addEventListener('click', () => {
-                    const slideIndex = parseInt(dot.dataset.slide, 10);
-                    goToSlide(slideIndex);
-                });
-            });
-
-            slider.addEventListener('mouseenter', stopAutoScroll);
-            slider.addEventListener('mouseleave', startAutoScroll);
-
-            goToSlide(0);
-            startAutoScroll();
-        }
-    });
 
     // AJAX Pagination
     document.addEventListener('DOMContentLoaded', function() {

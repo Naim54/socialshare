@@ -6,6 +6,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'SocialShare - Your News, Your Way')</title>
     
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="flex flex-col @yield('body-class', 'h-screen') bg-base-100 text-base-content">
@@ -19,7 +21,9 @@
         
         <!-- Main Content -->
         <main class="flex-1 overflow-y-auto @yield('main-class', 'p-6 bg-base-100') pb-16 md:pb-20">
-            @yield('content')
+            <div class="max-w-[1200px] mx-auto px-6 md:px-8 lg:px-10">
+                @yield('content')
+            </div>
         </main>
     </div>
 

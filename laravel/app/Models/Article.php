@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\UploadedFile;
 use Carbon\Carbon;
 
 class Article extends Model
@@ -130,20 +132,20 @@ class Article extends Model
     }
 
     /**
-     * Get category icon
+     * Get category icon (matching dashboard icons)
      */
     public static function getCategoryIcon($category)
     {
         return match($category) {
-            self::CATEGORY_WORLD => '<circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>',
-            self::CATEGORY_POLITICS => '<path d="M2 3v18h20V3H2Zm2 2h16v14H4V5Zm4 4h8v2H8V9Zm0 4h8v2H8v-2Z"/>',
-            self::CATEGORY_BUSINESS => '<line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>',
-            self::CATEGORY_TECH => '<rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line>',
-            self::CATEGORY_SPORTS => '<circle cx="12" cy="12" r="10"></circle><path d="m14.31 8 5.74 9.94"></path><path d="M9.69 8h-3.71"></path><path d="M14.31 16H3.97"></path><path d="m20.03 16-1.74-3-3.03-5.25"></path>',
-            self::CATEGORY_HEALTH => '<path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>',
-            self::CATEGORY_NATION => '<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>',
-            self::CATEGORY_ECONOMY => '<line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>',
-            default => '<circle cx="12" cy="12" r="10"></circle>',
+            self::CATEGORY_WORLD => 'fas fa-globe',
+            self::CATEGORY_POLITICS => 'fas fa-landmark',
+            self::CATEGORY_BUSINESS => 'fas fa-briefcase',
+            self::CATEGORY_TECH => 'fas fa-microchip',
+            self::CATEGORY_SPORTS => 'fas fa-futbol',
+            self::CATEGORY_HEALTH => 'fas fa-heartbeat',
+            self::CATEGORY_NATION => 'fas fa-flag',
+            self::CATEGORY_ECONOMY => 'fas fa-chart-line',
+            default => 'fas fa-newspaper',
         };
     }
 
@@ -181,5 +183,97 @@ class Article extends Model
             self::CATEGORY_WORLD => 'primary',
             default => 'neutral',
         };
+    }
+
+    /**
+     * Get the full URL for the featured image
+     * Returns the storage URL if it's a local file, or the original URL if it's external
+     */
+    public function getFeaturedImageUrlAttribute()
+    {
+        if (!$this->featured_image) {
+            return null;
+        }
+
+        // If it's already a full URL (external), return as is
+        if (filter_var($this->featured_image, FILTER_VALIDATE_URL)) {
+            return $this->featured_image;
+        }
+
+        // Determine the image path
+        $imagePath = $this->featured_image;
+        
+        // If it's just a filename (like '3601005.webp') or doesn't start with 'images/articles/', prepend it
+        if (!str_starts_with($imagePath, 'images/articles/')) {
+            // If it's already a path but doesn't start with our directory, just use filename
+            if (str_contains($imagePath, '/')) {
+                // Extract just the filename from any path
+                $imagePath = basename($imagePath);
+            }
+            $imagePath = 'images/articles/' . $imagePath;
+        }
+
+        // Use asset() helper which automatically uses the correct base URL (respects current port)
+        // This works better than Storage::url() when running on non-standard ports like 8080
+        return asset('storage/' . $imagePath);
+    }
+
+    /**
+     * Upload and store a featured image
+     * 
+     * @param UploadedFile $file
+     * @param string|null $oldImagePath The old image path to delete (optional)
+     * @return string The stored image path
+     */
+    public function uploadFeaturedImage(UploadedFile $file, ?string $oldImagePath = null): string
+    {
+        // Delete old image if provided
+        if ($oldImagePath && Storage::disk('public')->exists($oldImagePath)) {
+            Storage::disk('public')->delete($oldImagePath);
+        }
+
+        // Generate unique filename
+        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        
+        // Store in storage/app/public/images/articles/
+        $path = $file->storeAs('images/articles', $filename, 'public');
+
+        return $path;
+    }
+
+    /**
+     * Delete the featured image file from storage
+     */
+    public function deleteFeaturedImage(): bool
+    {
+        if ($this->featured_image && str_starts_with($this->featured_image, 'images/articles/')) {
+            if (Storage::disk('public')->exists($this->featured_image)) {
+                return Storage::disk('public')->delete($this->featured_image);
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Boot method to handle image deletion when article is deleted
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($article) {
+            // Delete image when article is soft deleted or permanently deleted
+            $article->deleteFeaturedImage();
+        });
+
+        static::updating(function ($article) {
+            // Delete old image if a new one is being uploaded
+            if ($article->isDirty('featured_image')) {
+                $oldImagePath = $article->getOriginal('featured_image');
+                if ($oldImagePath && str_starts_with($oldImagePath, 'images/articles/')) {
+                    Storage::disk('public')->delete($oldImagePath);
+                }
+            }
+        });
     }
 }

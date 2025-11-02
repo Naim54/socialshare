@@ -81,10 +81,10 @@
         </div>
 
         <!-- Featured Image -->
-        @if($article->featured_image)
+        @if($article->featured_image_url)
         <div class="mb-10 rounded-xl overflow-hidden shadow-lg border border-base-300">
             <img 
-                src="{{ $article->featured_image }}" 
+                src="{{ $article->featured_image_url }}" 
                 alt="{{ $article->title }}" 
                 class="w-full h-auto object-cover"
                 loading="lazy"
@@ -154,7 +154,7 @@
             <a href="{{ route('article.show', $related->slug) }}" class="card bg-base-200 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden border border-base-300 rounded-xl">
                 <figure class="relative overflow-hidden bg-base-300 aspect-video">
                     <img 
-                        src="{{ $related->featured_image }}" 
+                        src="{{ $related->featured_image_url }}" 
                         alt="{{ $related->title }}" 
                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
                         loading="lazy"
@@ -197,7 +197,7 @@
             <a href="{{ route('article.show', $latest->slug) }}" class="card bg-base-200 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden border border-base-300 rounded-xl">
                 <figure class="relative overflow-hidden bg-base-300 aspect-video">
                     <img 
-                        src="{{ $latest->featured_image }}" 
+                        src="{{ $latest->featured_image_url }}" 
                         alt="{{ $latest->title }}" 
                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
                         loading="lazy"

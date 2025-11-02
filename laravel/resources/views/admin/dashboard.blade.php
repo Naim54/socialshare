@@ -1,51 +1,24 @@
 @extends('layouts.admin')
 
-@section('title', 'Social Share Analytics - SocialShare')
+@section('title', 'Dashboard - SocialShare')
 
 @section('sidebar-nav')
     <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-3 px-4 py-3 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg theme-transition">
-        <i class="fas fa-chart-line"></i>
-        <span class="font-medium">Analytics</span>
-    </a>
-    <a href="#" class="flex items-center space-x-3 px-4 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 rounded-lg theme-transition">
-        <i class="fas fa-users"></i>
-        <span>Users</span>
-    </a>
-    <a href="#" class="flex items-center space-x-3 px-4 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 rounded-lg theme-transition">
-        <i class="fas fa-share"></i>
-        <span>Posts</span>
-    </a>
-    <a href="#" class="flex items-center space-x-3 px-4 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 rounded-lg theme-transition">
-        <i class="fas fa-cog"></i>
-        <span>Settings</span>
+        <i class="fas fa-share-alt"></i>
+        <span class="font-medium">Dashboard</span>
     </a>
 @endsection
 
 @section('header')
     <div class="flex items-center justify-between px-6 py-4">
         <div class="flex items-center space-x-4">
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white theme-transition">Admin Dashboard</h2>
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white theme-transition">Dashboard</h2>
         </div>
         
         <div class="flex items-center space-x-4">
-            <!-- Theme Toggle -->
             <button id="theme-toggle" class="p-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100 theme-transition">
                 <i id="theme-icon" class="fas fa-moon text-xl"></i>
             </button>
-            
-            <!-- Search -->
-            <div class="relative">
-                <input type="text" placeholder="Search..." class="w-64 px-4 py-2 pl-10 text-sm border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent theme-transition">
-                <i class="fas fa-search absolute left-3 top-3 text-gray-400 dark:text-gray-500"></i>
-            </div>
-            
-            <!-- Notifications -->
-            <button class="relative p-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100 theme-transition">
-                <i class="fas fa-bell text-xl"></i>
-                <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
-            
-            <!-- User Menu -->
             <div class="flex items-center space-x-3">
                 <div class="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
                     <span class="text-white text-sm font-medium">{{ substr(Auth::guard('admin')->user()->name, 0, 1) }}</span>
@@ -66,114 +39,343 @@
 @endsection
 
 @section('content')
-    <div class="p-6">
-        <!-- Page Header with Title and Filters -->
-        <div class="mb-6 pb-4 border-b border-gray-200 dark:border-dark-700 theme-transition">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div class="p-6 md:px-12 lg:px-20 xl:px-32 2xl:px-40">
+        <!-- Metrics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <!-- Unique Visitors Card -->
+            <div class="card bg-gradient-to-br from-base-100 to-primary/5 dark:from-dark-800 dark:to-primary/10 shadow-xl hover:shadow-2xl transition-all duration-300 border-l-4 border-primary overflow-hidden group hover:-translate-y-1">
+                <div class="card-body p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="avatar placeholder">
+                                <div class="bg-primary/20 text-primary rounded-xl w-14 h-14 flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                                    <i class="fas fa-users text-2xl"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-semibold text-base-content/60 dark:text-white/80 uppercase tracking-wide">Unique Visitors</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-end justify-between mt-2">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white theme-transition mb-2">Social Share Analytics</h1>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 theme-transition">Track and analyze social media share performance</p>
+                            <p class="text-4xl font-extrabold text-base-content dark:text-white leading-tight">
+                                {{ number_format($metrics['unique_visitors']['value']) }}
+                            </p>
                 </div>
-                <div class="flex flex-wrap items-center gap-3">
-                    <div class="flex space-x-2">
-                        <button data-period="30" class="period-btn px-3 py-1 text-sm bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full theme-transition">30 days</button>
-                        <button data-period="7" class="period-btn px-3 py-1 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-dark-700 rounded-full theme-transition">7 days</button>
-                        <button data-period="24" class="period-btn px-3 py-1 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-dark-700 rounded-full theme-transition">24 hours</button>
                     </div>
-                    <select id="platform-filter" class="px-3 py-1 text-sm border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-700 text-gray-900 dark:text-white rounded-lg theme-transition">
-                        <option value="all">All Platforms</option>
-                        <option value="facebook">Facebook</option>
-                        <option value="twitter">Twitter</option>
-                        <option value="whatsapp">WhatsApp</option>
-                        <option value="telegram">Telegram</option>
-                        <option value="email">Email</option>
-                    </select>
                 </div>
             </div>
-        </div>
 
-        <!-- Loading Indicator -->
-        <div id="loading-indicator" class="hidden mb-4 text-center">
-            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Loading analytics...</p>
+            <!-- Device Types Card -->
+            <div class="card bg-gradient-to-br from-base-100 to-secondary/5 dark:from-dark-800 dark:to-secondary/10 shadow-xl hover:shadow-2xl transition-all duration-300 border-l-4 border-secondary overflow-hidden group hover:-translate-y-1">
+                <div class="card-body p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="avatar placeholder">
+                                <div class="bg-secondary/20 text-secondary rounded-xl w-14 h-14 flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                                    <i class="fas fa-mobile-alt text-2xl"></i>
         </div>
-
-        <!-- Key Metrics -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8" id="metrics-container">
-            <!-- Total Clicks -->
-            <div class="bg-white dark:bg-dark-800 rounded-xl shadow-sm p-6 theme-transition">
-                <div class="flex items-center justify-between">
+        </div>
                     <div>
-                        <p class="text-sm font-medium text-gray-600 dark:text-gray-400 theme-transition">Total Shares</p>
-                        <p class="text-3xl font-bold text-gray-900 dark:text-white theme-transition" id="total-clicks">0</p>
+                                <h3 class="text-sm font-semibold text-base-content/60 dark:text-white/80 uppercase tracking-wide">Device Types</h3>
+                            </div>
+                        </div>
                     </div>
-                    <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center theme-transition">
-                        <i class="fas fa-share-alt text-indigo-600 dark:text-indigo-400 text-xl"></i>
+                    <div class="flex items-end justify-between mt-2">
+                        <div>
+                            <p class="text-4xl font-extrabold text-base-content dark:text-white leading-tight">
+                                {{ $metrics['device_types']['value'] }}
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Platform-specific metrics will be populated by JavaScript -->
+            <!-- Total Shares Card -->
+            <div class="card bg-gradient-to-br from-base-100 to-accent/5 dark:from-dark-800 dark:to-accent/10 shadow-xl hover:shadow-2xl transition-all duration-300 border-l-4 border-accent overflow-hidden group hover:-translate-y-1">
+                <div class="card-body p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="avatar placeholder">
+                                <div class="bg-accent/20 text-accent rounded-xl w-14 h-14 flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                                    <i class="fas fa-share-alt text-2xl"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-semibold text-base-content/60 dark:text-white/80 uppercase tracking-wide">Total Shares</h3>
+        </div>
+                </div>
+                    </div>
+                    <div class="flex items-end justify-between mt-2">
+                        <div>
+                            <p class="text-4xl font-extrabold text-base-content dark:text-white leading-tight">
+                                {{ number_format($metrics['total_shares']['value']) }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Articles Card -->
+            <div class="card bg-gradient-to-br from-base-100 to-info/5 dark:from-dark-800 dark:to-info/10 shadow-xl hover:shadow-2xl transition-all duration-300 border-l-4 border-info overflow-hidden group hover:-translate-y-1">
+                <div class="card-body p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="avatar placeholder">
+                                <div class="bg-info/20 text-info rounded-xl w-14 h-14 flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                                    <i class="fas fa-newspaper text-2xl"></i>
+                                </div>
+                </div>
+                            <div>
+                                <h3 class="text-sm font-semibold text-base-content/60 dark:text-white/80 uppercase tracking-wide">Total Articles</h3>
+                </div>
+            </div>
+        </div>
+                    <div class="flex items-end justify-between mt-2">
+                        <div>
+                            <p class="text-4xl font-extrabold text-base-content dark:text-white leading-tight">
+                                {{ number_format($metrics['total_articles']['value']) }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Charts Row -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <!-- Shares Over Time Chart -->
-            <div class="bg-white dark:bg-dark-800 rounded-xl shadow-sm p-6 theme-transition">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white theme-transition">Shares Over Time</h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 theme-transition" id="time-range-text">Last 30 days</p>
-                </div>
-                <!-- Statistics Summary -->
-                <div id="chart-stats" class="grid grid-cols-3 gap-4 mb-4 p-3 bg-gray-50 dark:bg-dark-700 rounded-lg theme-transition" style="display: none;">
-                    <div class="text-center">
-                        <div class="text-xs text-gray-500 dark:text-gray-400 theme-transition mb-1">Peak</div>
-                        <div class="text-sm font-bold text-green-600 dark:text-green-400 theme-transition" id="stat-max">0</div>
+        <!-- Charts Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <!-- Shares Trend Chart (Last 30 Days) -->
+            <div class="lg:col-span-2 card bg-white dark:bg-dark-800 shadow-lg rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300">
+                <div class="card-body p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-1">Shares Trend</h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Last 30 Days</p>
+                        </div>
+                        <div class="dropdown dropdown-end">
+                            <button class="btn btn-ghost btn-sm btn-circle" tabindex="0">
+                                <i class="fas fa-ellipsis-v text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100"></i>
+                            </button>
+                            <ul class="dropdown-content menu bg-white dark:bg-dark-700 rounded-box z-[1] w-52 p-2 shadow-lg border border-gray-200 dark:border-dark-600">
+                                <li>
+                                    <a href="{{ route('admin.export.shares-trend') }}" class="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-600">
+                                        <i class="fas fa-file-excel text-green-600 dark:text-green-400"></i>
+                                        <span>Export Excel</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="exportChartAsImage('sharesTrendChart', 'shares-trend'); return false;" class="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-600">
+                                        <i class="fas fa-image text-blue-600 dark:text-blue-400"></i>
+                                        <span>Export Image</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
-                    <div class="text-center">
-                        <div class="text-xs text-gray-500 dark:text-gray-400 theme-transition mb-1">Average</div>
-                        <div class="text-sm font-bold text-blue-600 dark:text-blue-400 theme-transition" id="stat-avg">0</div>
+                    
+                    <div class="flex items-center gap-6 mb-4">
+                        <div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Shares</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ number_format($sharesTrendData['total_shares']) }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Avg Daily</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ number_format($sharesTrendData['avg_daily']) }}</p>
+                        </div>
                     </div>
-                    <div class="text-center">
-                        <div class="text-xs text-gray-500 dark:text-gray-400 theme-transition mb-1">Lowest</div>
-                        <div class="text-sm font-bold text-gray-600 dark:text-gray-400 theme-transition" id="stat-min">0</div>
+                    
+                    <div class="chart-container" style="height: 280px;">
+                        <canvas id="sharesTrendChart"></canvas>
                     </div>
-                </div>
-                <div class="chart-container">
-                    <canvas id="sharesOverTimeChart"></canvas>
                 </div>
             </div>
 
-            <!-- Platform Distribution -->
-            <div class="bg-white dark:bg-dark-800 rounded-xl shadow-sm p-6 theme-transition">
+            <!-- Shares Metric Card with Mini Chart -->
+            <div class="card bg-white dark:bg-dark-800 shadow-lg rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300">
+                <div class="card-body p-6">
                 <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white theme-transition">Platform Distribution</h3>
+                        <div class="flex items-center gap-3">
+                            <div class="w-11 h-11 rounded-lg bg-teal-500/10 dark:bg-teal-500/20 text-teal-500 dark:text-teal-400 flex items-center justify-center">
+                                <i class="fas fa-share-alt text-lg"></i>
+                            </div>
+                            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Shares</h3>
+                        </div>
+                        <div class="dropdown dropdown-end">
+                            <button class="btn btn-ghost btn-sm btn-circle" tabindex="0">
+                                <i class="fas fa-ellipsis-v text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100"></i>
+                            </button>
+                            <ul class="dropdown-content menu bg-white dark:bg-dark-700 rounded-box z-[1] w-52 p-2 shadow-lg border border-gray-200 dark:border-dark-600">
+                                <li>
+                                    <a href="{{ route('admin.export.shares-platform') }}" class="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-600">
+                                        <i class="fas fa-file-excel text-green-600 dark:text-green-400"></i>
+                                        <span>Export Excel</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="exportChartAsImage('dailySharesChart', 'shares-by-platform'); return false;" class="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-600">
+                                        <i class="fas fa-image text-blue-600 dark:text-blue-400"></i>
+                                        <span>Export Image</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <p class="text-4xl font-bold text-gray-900 dark:text-white mb-4 text-center">{{ number_format($metrics['total_shares']['value']) }}</p>
+                    </div>
+                    
+                    <!-- Donut Chart - Centered and Bigger -->
+                    <div class="flex justify-center mb-4">
+                        <div class="chart-container" style="height: 200px; width: 200px; position: relative;">
+                            <canvas id="dailySharesChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Platform Legend -->
+                    <div class="grid grid-cols-2 gap-x-4 gap-y-2.5 pt-4 border-t border-gray-100 dark:border-gray-700">
+                        @foreach($sharesByPlatform['labels'] as $index => $label)
+                            <div class="flex items-center gap-2">
+                                <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: {{ $sharesByPlatform['colors'][$index] }}"></div>
+                                <span class="text-xs font-medium text-gray-600 dark:text-gray-400 truncate">{{ $label }}</span>
+                            </div>
+                        @endforeach
                 </div>
-                <div class="chart-container">
-                    <canvas id="platformDistributionChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- Bottom Row -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <!-- Top Pages -->
-            <div class="bg-white dark:bg-dark-800 rounded-xl shadow-sm p-6 theme-transition">
+        <!-- Second Row Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <!-- Top Categories Shared List -->
+            <div class="card bg-white dark:bg-dark-800 shadow-lg rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300">
+                <div class="card-body p-6">
                 <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white theme-transition">Top Shared Pages</h3>
+                        <h3 class="text-base font-semibold text-gray-900 dark:text-white">Top Categories</h3>
+                        <div class="dropdown dropdown-end">
+                            <button class="btn btn-ghost btn-sm btn-circle" tabindex="0">
+                                <i class="fas fa-ellipsis-v text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100"></i>
+                            </button>
+                            <ul class="dropdown-content menu bg-white dark:bg-dark-700 rounded-box z-[1] w-52 p-2 shadow-lg border border-gray-200 dark:border-dark-600">
+                                <li>
+                                    <a href="{{ route('admin.export.top-categories') }}" class="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-600">
+                                        <i class="fas fa-file-excel text-green-600 dark:text-green-400"></i>
+                                        <span>Export Excel</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        @foreach($topCategoriesShared as $category)
+                            <div class="flex items-center gap-4 py-2">
+                                <!-- Icon -->
+                                <div class="w-12 h-12 rounded-lg {{ $category['color'] }} flex items-center justify-center flex-shrink-0">
+                                    <i class="fas {{ $category['icon'] }} text-white text-lg"></i>
+                                </div>
+                                
+                                <!-- Labels -->
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $category['name'] }}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ $category['description'] }}</p>
+                                </div>
+                                
+                                <!-- Shares -->
+                                <div class="text-right flex-shrink-0">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ number_format($category['shares']) }}</p>
+                                </div>
+                            </div>
+                        @endforeach
                 </div>
-                <div class="space-y-4" id="top-pages-list">
-                    <!-- Will be populated by JavaScript -->
                 </div>
             </div>
 
-            <!-- Platform Stats -->
-            <div class="bg-white dark:bg-dark-800 rounded-xl shadow-sm p-6 theme-transition">
+            <!-- Visitors Metric Card with Mini Chart -->
+            <div class="card bg-white dark:bg-dark-800 shadow-lg rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col">
+                <div class="card-body p-6 flex flex-col flex-1">
                 <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white theme-transition">Platform Statistics</h3>
+                        <div class="flex items-center gap-3">
+                            <div class="w-11 h-11 rounded-lg bg-teal-500/10 dark:bg-teal-500/20 text-teal-500 dark:text-teal-400 flex items-center justify-center">
+                                <i class="fas fa-users text-lg"></i>
+                            </div>
+                            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Visitors</h3>
+                        </div>
+                        <div class="dropdown dropdown-end">
+                            <button class="btn btn-ghost btn-sm btn-circle" tabindex="0">
+                                <i class="fas fa-ellipsis-v text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100"></i>
+                            </button>
+                            <ul class="dropdown-content menu bg-white dark:bg-dark-700 rounded-box z-[1] w-52 p-2 shadow-lg border border-gray-200 dark:border-dark-600">
+                                <li>
+                                    <a href="{{ route('admin.export.daily-visitors') }}" class="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-600">
+                                        <i class="fas fa-file-excel text-green-600 dark:text-green-400"></i>
+                                        <span>Export Excel</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="exportChartAsImage('dailyVisitorsChart', 'daily-visitors'); return false;" class="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-600">
+                                        <i class="fas fa-image text-blue-600 dark:text-blue-400"></i>
+                                        <span>Export Image</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4 flex-1 flex items-center">
+                        <p class="text-4xl font-bold text-gray-900 dark:text-white">{{ number_format($metrics['unique_visitors']['value']) }}</p>
+                    </div>
+                    
+                    <div class="mt-auto">
+                        <div class="chart-container" style="height: 90px;">
+                            <canvas id="dailyVisitorsChart"></canvas>
+                        </div>
+                    </div>
                 </div>
-                <div class="space-y-4" id="platform-stats-list">
-                    <!-- Will be populated by JavaScript -->
+            </div>
+
+            <!-- Device Types List -->
+            <div class="card bg-white dark:bg-dark-800 shadow-lg rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300">
+                <div class="card-body p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-base font-semibold text-gray-900 dark:text-white">Device Types</h3>
+                        <div class="dropdown dropdown-end">
+                            <button class="btn btn-ghost btn-sm btn-circle" tabindex="0">
+                                <i class="fas fa-ellipsis-v text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100"></i>
+                            </button>
+                            <ul class="dropdown-content menu bg-white dark:bg-dark-700 rounded-box z-[1] w-52 p-2 shadow-lg border border-gray-200 dark:border-dark-600">
+                                <li>
+                                    <a href="{{ route('admin.export.device-types') }}" class="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-600">
+                                        <i class="fas fa-file-excel text-green-600 dark:text-green-400"></i>
+                                        <span>Export Excel</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        @foreach($deviceTypes as $device)
+                            <div class="flex items-center gap-4 py-2">
+                                <!-- Icon -->
+                                <div class="w-12 h-12 rounded-lg {{ $device['color'] }} flex items-center justify-center flex-shrink-0">
+                                    <i class="fas {{ $device['icon'] }} text-white text-lg"></i>
+                                </div>
+                                
+                                <!-- Labels -->
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $device['name'] }}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ $device['description'] }}</p>
+                                </div>
+                                
+                                <!-- Count -->
+                                <div class="text-right flex-shrink-0">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ number_format($device['count']) }}</p>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
             </div>
         </div>
@@ -182,12 +384,11 @@
 
 @push('scripts')
 <script>
-    // Theme Toggle Functionality
+    // Theme Toggle
     const themeToggle = document.getElementById('theme-toggle');
     const themeIcon = document.getElementById('theme-icon');
     const html = document.documentElement;
 
-    // Check for saved theme preference or default to light mode
     const currentTheme = localStorage.getItem('theme') || 'light';
     html.classList.toggle('dark', currentTheme === 'dark');
     updateThemeIcon(currentTheme);
@@ -197,323 +398,240 @@
         const theme = isDark ? 'dark' : 'light';
         localStorage.setItem('theme', theme);
         updateThemeIcon(theme);
-        updateChartColors(theme);
+        // Update charts when theme changes
+        setTimeout(() => updateChartTheme(), 100);
     });
 
     function updateThemeIcon(theme) {
-        if (theme === 'dark') {
-            themeIcon.className = 'fas fa-sun text-xl';
-        } else {
-            themeIcon.className = 'fas fa-moon text-xl';
-        }
+        themeIcon.className = theme === 'dark' ? 'fas fa-sun text-xl' : 'fas fa-moon text-xl';
     }
 
-    // Social Share Analytics
-    let sharesOverTimeChart = null;
-    let platformDistributionChart = null;
-    let currentPeriod = 30; // days
-    let currentPlatform = 'all';
+    // Store chart instances globally for export
+    let chartInstances = {};
 
-    const platformColors = {
-        facebook: { bg: 'rgb(59, 130, 246)', hover: 'rgba(59, 130, 246, 0.8)' },
-        twitter: { bg: 'rgb(0, 0, 0)', hover: 'rgba(0, 0, 0, 0.8)' },
-        whatsapp: { bg: 'rgb(34, 197, 94)', hover: 'rgba(34, 197, 94, 0.8)' },
-        telegram: { bg: 'rgb(59, 130, 246)', hover: 'rgba(59, 130, 246, 0.8)' },
-        email: { bg: 'rgb(107, 114, 128)', hover: 'rgba(107, 114, 128, 0.8)' }
-    };
-
-    const platformIcons = {
-        facebook: 'fab fa-facebook',
-        twitter: 'fab fa-twitter',
-        whatsapp: 'fab fa-whatsapp',
-        telegram: 'fab fa-telegram',
-        email: 'fas fa-envelope'
-    };
-
-    function getDateRange(period) {
-        const endDate = new Date();
-        const startDate = new Date();
-        
-        if (period === 24) {
-            startDate.setHours(endDate.getHours() - 24);
-        } else {
-            startDate.setDate(endDate.getDate() - period);
-        }
-        
-        return {
-            start: startDate.toISOString().split('T')[0],
-            end: endDate.toISOString().split('T')[0]
-        };
-    }
-
-    async function loadAnalytics() {
-        const loadingIndicator = document.getElementById('loading-indicator');
-        loadingIndicator.classList.remove('hidden');
-
-        try {
-            const dateRange = getDateRange(currentPeriod);
-            const params = new URLSearchParams({
-                start_date: dateRange.start,
-                end_date: dateRange.end
-            });
-
-            if (currentPlatform !== 'all') {
-                params.append('platform', currentPlatform);
-            }
-
-            const response = await fetch(`/admin/api/social-share/analytics?${params.toString()}`);
-            const result = await response.json();
-
-            if (result.success) {
-                updateDashboard(result.data);
-            } else {
-                console.error('Failed to load analytics:', result);
-            }
-        } catch (error) {
-            console.error('Error loading analytics:', error);
-        } finally {
-            loadingIndicator.classList.add('hidden');
-        }
-    }
-
-    function updateDashboard(data) {
-        // Update total clicks
-        document.getElementById('total-clicks').textContent = data.total_clicks.toLocaleString();
-
-        // Update platform metrics
-        updatePlatformMetrics(data.clicks_by_platform);
-
-        // Update charts
-        updateSharesOverTimeChart(data.clicks_over_time);
-        updatePlatformDistributionChart(data.clicks_by_platform);
-
-        // Update top pages
-        updateTopPages(data.top_pages);
-
-        // Update platform stats
-        updatePlatformStats(data.platform_stats);
-    }
-
-    function updatePlatformMetrics(clicksByPlatform) {
-        const container = document.getElementById('metrics-container');
-        const existingMetrics = container.querySelectorAll('.platform-metric');
-        existingMetrics.forEach(el => el.remove());
-
-        Object.entries(clicksByPlatform).forEach(([platform, count]) => {
-            const color = platformColors[platform] || { bg: 'rgb(99, 102, 241)' };
-            const icon = platformIcons[platform] || 'fas fa-share-alt';
-            const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
-
-            const metricCard = document.createElement('div');
-            metricCard.className = 'bg-white dark:bg-dark-800 rounded-xl shadow-sm p-6 theme-transition platform-metric';
-            metricCard.innerHTML = `
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-600 dark:text-gray-400 theme-transition">${platformName}</p>
-                        <p class="text-3xl font-bold text-gray-900 dark:text-white theme-transition">${count.toLocaleString()}</p>
-                    </div>
-                    <div class="w-12 h-12 rounded-lg flex items-center justify-center theme-transition" style="background-color: ${color.hover}20;">
-                        <i class="${icon}" style="color: ${color.bg};"></i>
-                    </div>
-                </div>
-            `;
-            container.appendChild(metricCard);
-        });
-    }
-
-    function updateSharesOverTimeChart(data) {
-        const ctx = document.getElementById('sharesOverTimeChart');
+    // Chart.js Configuration - Update on theme change
+    function updateChartTheme() {
         const isDark = html.classList.contains('dark');
-        const textColor = isDark ? '#e2e8f0' : '#374151';
-        const gridColor = isDark ? '#374151' : '#e5e7eb';
-        const borderColor = isDark ? 'rgba(139, 92, 246, 0.3)' : 'rgba(139, 92, 246, 0.2)';
-
-        if (sharesOverTimeChart) {
-            sharesOverTimeChart.destroy();
-        }
-
-        if (data.length === 0) {
-            ctx.getContext('2d').clearRect(0, 0, ctx.width, ctx.height);
-            return;
-        }
-
-        const labels = data.map(item => item.period);
-        const values = data.map(item => item.count);
+        const gridColor = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)';
+        const textColor = isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)';
         
-        // Calculate statistics
-        const maxValue = Math.max(...values);
-        const minValue = Math.min(...values);
-        const avgValue = Math.round(values.reduce((a, b) => a + b, 0) / values.length);
+        // Update all chart instances
+        Object.values(chartInstances).forEach(chart => {
+            if (chart && chart.options) {
+                if (chart.options.scales) {
+                    if (chart.options.scales.y) {
+                        chart.options.scales.y.grid.color = gridColor;
+                        chart.options.scales.y.ticks.color = textColor;
+                    }
+                    if (chart.options.scales.x) {
+                        chart.options.scales.x.ticks.color = textColor;
+                    }
+                }
+                if (chart.options.plugins) {
+                    if (chart.options.plugins.tooltip) {
+                        chart.options.plugins.tooltip.backgroundColor = isDark ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                        chart.options.plugins.tooltip.titleColor = isDark ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)';
+                        chart.options.plugins.tooltip.bodyColor = isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
+                        chart.options.plugins.tooltip.borderColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                    }
+                }
+                chart.update();
+            }
+        });
         
-        // Update statistics display
-        const statsDiv = document.getElementById('chart-stats');
-        if (statsDiv) {
-            document.getElementById('stat-max').textContent = maxValue.toLocaleString();
-            document.getElementById('stat-avg').textContent = avgValue.toLocaleString();
-            document.getElementById('stat-min').textContent = minValue.toLocaleString();
-            statsDiv.style.display = 'grid';
-        }
+        return { gridColor, textColor };
+    }
 
-        sharesOverTimeChart = new Chart(ctx, {
+    // Get initial theme colors
+        const isDark = html.classList.contains('dark');
+    let { gridColor, textColor } = {
+        gridColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)',
+        textColor: isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)'
+    };
+    
+    // Listen for theme changes
+    const observer = new MutationObserver(() => {
+        setTimeout(() => updateChartTheme(), 100);
+    });
+    observer.observe(html, { attributes: true, attributeFilter: ['class'] });
+
+    // Shares Trend Chart (Line Chart - Last 30 Days)
+    const sharesTrendCtx = document.getElementById('sharesTrendChart');
+    if (sharesTrendCtx) {
+        chartInstances.sharesTrendChart = new Chart(sharesTrendCtx, {
             type: 'line',
             data: {
-                labels: labels,
+                labels: @json($sharesTrendData['labels']),
                 datasets: [{
-                    label: 'Social Shares',
-                    data: values,
-                    borderColor: 'rgb(139, 92, 246)',
-                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    label: 'Shares',
+                    data: @json($sharesTrendData['values']),
+                    borderColor: 'rgba(20, 184, 166, 1)',
+                    backgroundColor: 'rgba(20, 184, 166, 0.1)',
                     borderWidth: 3,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    pointBackgroundColor: 'rgb(139, 92, 246)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: 'rgba(20, 184, 166, 1)',
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2,
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: 'rgb(139, 92, 246)',
-                    pointHoverBorderWidth: 3,
-                    tension: 0.4,
-                    fill: true,
-                    stepped: false
+                    pointHoverBackgroundColor: 'rgba(20, 184, 166, 1)',
+                    pointHoverBorderColor: '#fff',
+                    pointHoverBorderWidth: 3
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                interaction: {
-                    intersect: false,
-                    mode: 'index'
-                },
                 plugins: {
                     legend: {
-                        display: true,
-                        position: 'top',
-                        labels: {
-                            color: textColor,
-                            font: {
-                                size: 12,
-                                weight: '500'
-                            },
-                            padding: 15,
-                            usePointStyle: true,
-                            pointStyle: 'circle'
-                        }
+                        display: false
                     },
                     tooltip: {
-                        backgroundColor: isDark ? 'rgba(30, 41, 59, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-                        titleColor: textColor,
-                        bodyColor: textColor,
-                        borderColor: 'rgb(139, 92, 246)',
+                        enabled: true,
+                        backgroundColor: isDark ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                        titleColor: isDark ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)',
+                        bodyColor: isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)',
+                        borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
                         borderWidth: 1,
                         padding: 12,
-                        displayColors: true,
+                        cornerRadius: 8,
+                        displayColors: false,
                         callbacks: {
-                            title: function(context) {
-                                return context[0].label;
-                            },
                             label: function(context) {
-                                return `${context.dataset.label}: ${context.parsed.y.toLocaleString()} shares`;
-                            },
-                            afterLabel: function(context) {
-                                const value = context.parsed.y;
-                                let comparison = '';
-                                if (value === maxValue) {
-                                    comparison = ' (Peak)';
-                                } else if (value === minValue) {
-                                    comparison = ' (Lowest)';
-                                } else if (value > avgValue) {
-                                    comparison = ` (Above avg: ${avgValue})`;
-                                } else {
-                                    comparison = ` (Below avg: ${avgValue})`;
-                                }
-                                return comparison;
+                                return context.parsed.y.toLocaleString() + ' shares';
                             }
                         }
                     }
                 },
                 scales: {
-                    x: {
-                        ticks: {
-                            color: textColor,
-                            maxRotation: 45,
-                            minRotation: 45,
-                            font: {
-                                size: 10
-                            }
-                        },
-                        grid: {
-                            color: borderColor,
-                            drawBorder: true,
-                            borderColor: gridColor
-                        },
-                        title: {
-                            display: true,
-                            text: 'Time Period',
-                            color: textColor,
-                            font: {
-                                size: 12,
-                                weight: '500'
-                            }
-                        }
-                    },
                     y: {
-                        beginAtZero: true,
+                        beginAtZero: false,
+                        grid: {
+                            color: gridColor
+                        },
                         ticks: {
                             color: textColor,
-                            stepSize: 1,
                             callback: function(value) {
                                 return value.toLocaleString();
-                            },
-                            font: {
-                                size: 10
+                            }
                             }
                         },
+                    x: {
                         grid: {
-                            color: borderColor,
-                            drawBorder: true,
-                            borderColor: gridColor
+                            display: false
                         },
-                        title: {
-                            display: true,
-                            text: 'Number of Shares',
-                            color: textColor,
-                            font: {
-                                size: 12,
-                                weight: '500'
-                            }
+                        ticks: {
+                            color: textColor
                         }
                     }
                 },
-                animation: {
-                    duration: 1000,
-                    easing: 'easeInOutQuart'
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
                 }
             }
         });
     }
 
-    function updatePlatformDistributionChart(data) {
-        const ctx = document.getElementById('platformDistributionChart');
-        const isDark = html.classList.contains('dark');
-        const textColor = isDark ? '#e2e8f0' : '#374151';
 
-        if (platformDistributionChart) {
-            platformDistributionChart.destroy();
-        }
-
-        const labels = Object.keys(data).map(p => p.charAt(0).toUpperCase() + p.slice(1));
-        const values = Object.values(data);
-        const colors = Object.keys(data).map(p => platformColors[p]?.bg || 'rgb(99, 102, 241)');
-
-        platformDistributionChart = new Chart(ctx, {
+    // Daily Shares Mini Chart (Donut Chart)
+    const dailySharesCtx = document.getElementById('dailySharesChart');
+    if (dailySharesCtx) {
+        chartInstances.dailySharesChart = new Chart(dailySharesCtx, {
             type: 'doughnut',
             data: {
-                labels: labels,
+                labels: @json($sharesByPlatform['labels']),
                 datasets: [{
-                    data: values,
-                    backgroundColor: colors.map(c => c.replace('rgb', 'rgba').replace(')', ', 0.8)')),
-                    borderColor: colors,
-                    borderWidth: 2
+                    label: 'Shares',
+                    data: @json($sharesByPlatform['values']),
+                    backgroundColor: @json($sharesByPlatform['colors']),
+                    borderWidth: 3,
+                    borderColor: isDark ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 1)',
+                    hoverOffset: 6,
+                    hoverBorderWidth: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                animation: {
+                    animateRotate: true,
+                    animateScale: false,
+                    duration: 1000,
+                    easing: 'easeOutQuart'
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: isDark ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                        titleColor: isDark ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)',
+                        bodyColor: isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)',
+                        borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                        borderWidth: 1,
+                        padding: 12,
+                        cornerRadius: 8,
+                        displayColors: true,
+                        usePointStyle: true,
+                        boxPadding: 6,
+                        callbacks: {
+                            title: function(context) {
+                                return context[0].label;
+                            },
+                            label: function(context) {
+                                let label = context.label || '';
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                return label + ': ' + context.parsed.toLocaleString() + ' shares (' + percentage + '%)';
+                            },
+                            labelPointStyle: function(context) {
+                                return {
+                                    pointStyle: 'circle',
+                                    rotation: 0
+                                };
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'point'
+                }
+            }
+        });
+    }
+
+    // Daily Visitors Mini Chart (Bar Chart)
+    const dailyVisitorsCtx = document.getElementById('dailyVisitorsChart');
+    if (dailyVisitorsCtx) {
+        // Different colors for each day of the week
+        const dayColors = [
+            'rgba(59, 130, 246, 1)',   // Blue - Sunday
+            'rgba(34, 197, 94, 1)',    // Green - Monday
+            'rgba(249, 115, 22, 1)',   // Orange - Tuesday
+            'rgba(168, 85, 247, 1)',   // Purple - Wednesday
+            'rgba(239, 68, 68, 1)',    // Red - Thursday
+            'rgba(20, 184, 166, 1)',   // Teal - Friday
+            'rgba(236, 72, 153, 1)'    // Pink - Saturday
+        ];
+        
+        chartInstances.dailyVisitorsChart = new Chart(dailyVisitorsCtx, {
+            type: 'bar',
+            data: {
+                labels: @json($dailyVisitorsData['labels']),
+                datasets: [{
+                    label: 'Visitors',
+                    data: @json($dailyVisitorsData['values']),
+                    backgroundColor: (context) => {
+                        const index = context.dataIndex;
+                        return dayColors[index % dayColors.length];
+                    },
+                    borderWidth: 0,
+                    borderRadius: 4
                 }]
             },
             options: {
@@ -521,10 +639,47 @@
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        position: 'bottom',
-                        labels: {
+                        display: false
+                    },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: isDark ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                        titleColor: isDark ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)',
+                        bodyColor: isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)',
+                        borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                        borderWidth: 1,
+                        padding: 12,
+                        cornerRadius: 8,
+                        displayColors: true,
+                        usePointStyle: true,
+                        boxPadding: 6,
+                        callbacks: {
+                            title: function(context) {
+                                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                                return days[context[0].dataIndex] || context[0].label;
+                            },
+                            label: function(context) {
+                                const value = context.parsed.y;
+                                return value === 1 ? value + ' visitor' : value + ' visitors';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        display: false,
+                        beginAtZero: true
+                    },
+                    x: {
+                        display: true,
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
                             color: textColor,
-                            padding: 15
+                            font: {
+                                size: 10
+                            }
                         }
                     }
                 }
@@ -532,113 +687,27 @@
         });
     }
 
-    function updateTopPages(pages) {
-        const container = document.getElementById('top-pages-list');
-        container.innerHTML = '';
-
-        if (pages.length === 0) {
-            container.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>';
+    // Export Chart as Image Function
+    function exportChartAsImage(canvasId, filename) {
+        const chart = chartInstances[canvasId];
+        if (!chart) {
+            alert('Chart not found. Please refresh the page.');
             return;
         }
 
-        pages.forEach((page, index) => {
-            const item = document.createElement('div');
-            item.className = 'flex items-center justify-between';
-            item.innerHTML = `
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-gray-900 dark:text-white theme-transition truncate" title="${page.url}">
-                        ${index + 1}. ${page.title || page.url}
-                    </p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 theme-transition truncate">${page.url}</p>
-                </div>
-                <span class="text-sm text-gray-500 dark:text-gray-400 theme-transition ml-4">${page.count.toLocaleString()}</span>
-            `;
-            container.appendChild(item);
-        });
+        // Get the base64 image from the chart
+        const url = chart.toBase64Image('image/png', 1);
+        
+        // Create a download link
+        const link = document.createElement('a');
+        link.download = filename + '_' + new Date().toISOString().split('T')[0] + '.png';
+        link.href = url;
+        
+        // Trigger download
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 
-    function updatePlatformStats(stats) {
-        const container = document.getElementById('platform-stats-list');
-        container.innerHTML = '';
-
-        Object.entries(stats).forEach(([platform, stat]) => {
-            const color = platformColors[platform] || { bg: 'rgb(99, 102, 241)' };
-            const icon = platformIcons[platform] || 'fas fa-share-alt';
-            const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
-
-            const item = document.createElement('div');
-            item.className = 'flex items-center justify-between';
-            item.innerHTML = `
-                <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center theme-transition" style="background-color: ${color.hover}20;">
-                        <i class="${icon}" style="color: ${color.bg};"></i>
-                    </div>
-                    <span class="font-medium text-gray-900 dark:text-white theme-transition">${platformName}</span>
-                </div>
-                <div class="text-right">
-                    <span class="text-sm font-bold text-gray-900 dark:text-white theme-transition">${stat.total.toLocaleString()}</span>
-                    <span class="text-xs text-gray-500 dark:text-gray-400 theme-transition ml-2">${stat.percentage.toFixed(1)}%</span>
-                </div>
-            `;
-            container.appendChild(item);
-        });
-    }
-
-    function updateChartColors(theme) {
-        if (sharesOverTimeChart) {
-            const isDark = theme === 'dark';
-            const textColor = isDark ? '#e2e8f0' : '#374151';
-            const gridColor = isDark ? '#374151' : '#e5e7eb';
-
-            sharesOverTimeChart.options.plugins.legend.labels.color = textColor;
-            sharesOverTimeChart.options.scales.x.ticks.color = textColor;
-            sharesOverTimeChart.options.scales.x.grid.color = gridColor;
-            sharesOverTimeChart.options.scales.y.ticks.color = textColor;
-            sharesOverTimeChart.options.scales.y.grid.color = gridColor;
-            sharesOverTimeChart.update();
-        }
-
-        if (platformDistributionChart) {
-            const isDark = theme === 'dark';
-            const textColor = isDark ? '#e2e8f0' : '#374151';
-            platformDistributionChart.options.plugins.legend.labels.color = textColor;
-            platformDistributionChart.update();
-        }
-    }
-
-    // Period buttons
-    document.querySelectorAll('.period-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.period-btn').forEach(b => {
-                b.classList.remove('bg-indigo-100', 'dark:bg-indigo-900/30', 'text-indigo-700', 'dark:text-indigo-300');
-                b.classList.add('text-gray-500', 'dark:text-gray-400');
-            });
-            this.classList.add('bg-indigo-100', 'dark:bg-indigo-900/30', 'text-indigo-700', 'dark:text-indigo-300');
-            this.classList.remove('text-gray-500', 'dark:text-gray-400');
-            
-            currentPeriod = parseInt(this.dataset.period);
-            
-            // Update time range text
-            const timeRangeText = document.getElementById('time-range-text');
-            if (currentPeriod === 24) {
-                timeRangeText.textContent = 'Last 24 hours';
-            } else if (currentPeriod === 7) {
-                timeRangeText.textContent = 'Last 7 days';
-            } else {
-                timeRangeText.textContent = 'Last 30 days';
-            }
-            
-            loadAnalytics();
-        });
-    });
-
-    // Platform filter
-    document.getElementById('platform-filter').addEventListener('change', function() {
-        currentPlatform = this.value;
-        loadAnalytics();
-    });
-
-    // Load analytics on page load
-    loadAnalytics();
 </script>
 @endpush
