@@ -119,48 +119,6 @@ docker-compose -f docker/docker-compose.yml exec socialshare-php-service php art
 docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan route:cache
 ```
 
-**Option C: Windows PowerShell Script**
-
-If you're on Windows, you can use this PowerShell script to automate setup:
-
-```powershell
-# Create setup.ps1 file with the following content:
-
-Write-Host "Building containers..." -ForegroundColor Cyan
-docker-compose -f docker/docker-compose.yml build
-
-Write-Host "Starting containers..." -ForegroundColor Cyan
-docker-compose -f docker/docker-compose.yml up -d
-
-Write-Host "Waiting for containers to be ready..." -ForegroundColor Yellow
-Start-Sleep -Seconds 10
-
-Write-Host "Installing dependencies..." -ForegroundColor Cyan
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service composer install --no-scripts
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan package:discover
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service npm install
-
-Write-Host "Setting up application..." -ForegroundColor Cyan
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan key:generate
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan migrate
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan db:seed
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service npm run build
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan config:cache
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan route:cache
-
-Write-Host "Setting permissions..." -ForegroundColor Cyan
-docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chown -R www-data:www-data /var/www/storage
-docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/storage
-docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/bootstrap/cache
-docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/public/images
-
-Write-Host "`n✅ Setup complete! Visit http://localhost:8080" -ForegroundColor Green
-```
-
-Run it with: `.\setup.ps1`
-
-> **Note**: You may need to run `Set-ExecutionPolicy RemoteSigned` first if you get a permission error.
-
 ### Step 4: Set File Permissions
 
 > **Note**: If you used `make setup` (Option A), permissions are already set automatically. Skip this step if you used `make setup`.
