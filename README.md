@@ -492,6 +492,75 @@ make npm-dev
 make cache
 ```
 
+### Images Not Loading / Storage Symlink Issues
+
+If images are not loading (showing broken image icons), this is usually a storage symlink issue, especially on Windows:
+
+**Step 1: Verify the symlink exists**
+
+```bash
+# Check if symlink exists
+make shell
+ls -la /var/www/public/storage
+exit
+```
+
+**Step 2: Remove old symlink and recreate it**
+
+```bash
+# Remove old symlink if it exists
+make shell-root
+rm -rf /var/www/public/storage
+exit
+
+# Create new symlink
+make storage-link
+```
+
+**Step 3: Verify storage directory has files**
+
+```bash
+# Check if images exist in storage
+make shell
+ls -la /var/www/storage/app/public/images/articles/
+exit
+```
+
+**Step 4: Fix permissions on storage directory**
+
+```bash
+# Set correct permissions
+make shell-root
+chown -R www-data:www-data /var/www/storage/app/public
+chmod -R 755 /var/www/storage/app/public
+exit
+```
+
+**Step 5: Restart Nginx container** (after updating nginx config)
+
+```bash
+# After updating nginx/default.conf, restart nginx
+docker-compose -f docker/docker-compose.yml restart socialshare-nginx-service
+
+# Or using Make
+make restart
+```
+
+**Windows Alternative (if symlink still doesn't work):**
+
+The Nginx configuration has been updated to serve storage files directly without requiring a symlink. After updating the config file, restart the Nginx container:
+
+```powershell
+# Restart Nginx to apply config changes
+docker-compose -f docker/docker-compose.yml restart socialshare-nginx-service
+```
+
+**Verify it's working:**
+
+1. Check browser console for 404 errors on image URLs
+2. Visit http://localhost:8080/storage/images/articles/ directly (should show directory listing or files)
+3. Check Laravel logs: `make logs` or `docker-compose -f docker/docker-compose.yml logs socialshare-php-service`
+
 ## 📊 Services & Ports
 
 | Service | Container Name | Port | Description |
