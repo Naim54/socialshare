@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
 use Carbon\Carbon;
 
@@ -214,8 +213,8 @@ class Article extends Model
         }
 
         // Use asset() helper which automatically uses the correct base URL (respects current port)
-        // This works better than Storage::url() when running on non-standard ports like 8080
-        return asset('storage/' . $imagePath);
+        // Images are stored directly in public/images/articles/ (no symlink needed)
+        return asset($imagePath);
     }
 
     /**
@@ -228,17 +227,26 @@ class Article extends Model
     public function uploadFeaturedImage(UploadedFile $file, ?string $oldImagePath = null): string
     {
         // Delete old image if provided
-        if ($oldImagePath && Storage::disk('public')->exists($oldImagePath)) {
-            Storage::disk('public')->delete($oldImagePath);
+        if ($oldImagePath) {
+            $oldFullPath = public_path($oldImagePath);
+            if (file_exists($oldFullPath)) {
+                unlink($oldFullPath);
+            }
+        }
+
+        // Ensure directory exists
+        $uploadPath = public_path('images/articles');
+        if (!file_exists($uploadPath)) {
+            mkdir($uploadPath, 0755, true);
         }
 
         // Generate unique filename
         $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
         
-        // Store in storage/app/public/images/articles/
-        $path = $file->storeAs('images/articles', $filename, 'public');
-
-        return $path;
+        // Store directly in public/images/articles/ (no symlink needed)
+        $file->move($uploadPath, $filename);
+        
+        return 'images/articles/' . $filename;
     }
 
     /**
@@ -247,8 +255,9 @@ class Article extends Model
     public function deleteFeaturedImage(): bool
     {
         if ($this->featured_image && str_starts_with($this->featured_image, 'images/articles/')) {
-            if (Storage::disk('public')->exists($this->featured_image)) {
-                return Storage::disk('public')->delete($this->featured_image);
+            $imagePath = public_path($this->featured_image);
+            if (file_exists($imagePath)) {
+                return unlink($imagePath);
             }
         }
         return false;
@@ -271,7 +280,10 @@ class Article extends Model
             if ($article->isDirty('featured_image')) {
                 $oldImagePath = $article->getOriginal('featured_image');
                 if ($oldImagePath && str_starts_with($oldImagePath, 'images/articles/')) {
-                    Storage::disk('public')->delete($oldImagePath);
+                    $oldFullPath = public_path($oldImagePath);
+                    if (file_exists($oldFullPath)) {
+                        unlink($oldFullPath);
+                    }
                 }
             }
         });

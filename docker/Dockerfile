@@ -71,10 +71,12 @@ RUN composer install --optimize-autoloader --no-interaction --no-scripts
 # Note: Assets will be built in the builder stage or mounted via volumes
 # NPM dependencies are installed but assets are built separately
 
-# Set proper permissions
-RUN chown -R www-data:www-data /var/www \
+# Create public images directory (no symlink needed - images stored directly in public)
+RUN mkdir -p /var/www/public/images/articles \
+    && chown -R www-data:www-data /var/www \
     && chmod -R 755 /var/www/storage \
-    && chmod -R 755 /var/www/bootstrap/cache
+    && chmod -R 755 /var/www/bootstrap/cache \
+    && chmod -R 755 /var/www/public/images
 
 # Expose port 9000 for PHP-FPM
 EXPOSE 9000

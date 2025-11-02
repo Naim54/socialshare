@@ -150,7 +150,7 @@ This single command will:
 - Cache configuration
 - Run database migrations
 
-> **Important**: After running `make setup`, you may need to set storage permissions. See step 4 below.
+> **Note**: Images are stored directly in `public/images/articles/` - no symlink needed! This makes setup easier, especially on Windows.
 
 **Option B: Manual Setup**
 
@@ -179,46 +179,42 @@ make vite-build
 # Clear and cache configuration
 make cache
 
-# Set storage permissions (important!)
-make storage-link
+# Set permissions (important!)
 make shell-root
 chown -R www-data:www-data /var/www/storage
 chmod -R 755 /var/www/storage
 chmod -R 755 /var/www/bootstrap/cache
+chmod -R 755 /var/www/public/images
 exit
 ```
 
-### 4. Set Storage Permissions
+### 4. Set Permissions
 
-Laravel needs write permissions on the `storage` and `bootstrap/cache` directories. After starting containers, set the permissions:
+Set proper permissions for storage, cache, and public images directories:
 
 **Using Make:**
 
 ```bash
-# Create storage symlink
-make storage-link
-
-# Fix storage permissions
+# Fix permissions
 make shell-root
 chown -R www-data:www-data /var/www/storage
 chmod -R 755 /var/www/storage
 chmod -R 755 /var/www/bootstrap/cache
+chmod -R 755 /var/www/public/images
 exit
 ```
 
 **Windows (PowerShell/CMD):**
 
 ```powershell
-# Create storage symlink
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan storage:link
-
-# Fix storage permissions (as root)
+# Fix permissions (as root)
 docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chown -R www-data:www-data /var/www/storage
 docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/storage
 docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/bootstrap/cache
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/public/images
 ```
 
-> **Note**: Storage permissions are required for file uploads, logging, and caching to work properly.
+> **Note**: Images are stored directly in `public/images/articles/` (no symlink needed!). This makes setup easier, especially on Windows.
 
 ### 5. Access the Application
 
@@ -266,15 +262,13 @@ docker-compose -f docker/docker-compose.yml exec socialshare-php-service php art
 # 6. Build frontend assets
 docker-compose -f docker/docker-compose.yml exec socialshare-php-service npm run build
 
-# 7. Create storage symlink
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan storage:link
-
-# 8. Set storage permissions (important!)
+# 7. Set permissions (important!)
 docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chown -R www-data:www-data /var/www/storage
 docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/storage
 docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/bootstrap/cache
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/public/images
 
-# 9. Cache configuration
+# 8. Cache configuration
 docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan config:cache
 docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan route:cache
 ```
@@ -318,17 +312,17 @@ docker-compose -f docker/docker-compose.yml exec socialshare-php-service npm ins
 
 Write-Host "Setting up application..."
 docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan key:generate
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan storage:link
 docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan migrate
 docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan db:seed
 docker-compose -f docker/docker-compose.yml exec socialshare-php-service npm run build
 docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan config:cache
 docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan route:cache
 
-Write-Host "Setting storage permissions..."
+Write-Host "Setting permissions..."
 docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chown -R www-data:www-data /var/www/storage
 docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/storage
 docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/bootstrap/cache
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/public/images
 
 Write-Host "Setup complete! Visit http://localhost:8080"
 ```
@@ -492,74 +486,98 @@ make npm-dev
 make cache
 ```
 
-### Images Not Loading / Storage Symlink Issues
+### Images Not Loading
 
-If images are not loading (showing broken image icons), this is usually a storage symlink issue, especially on Windows:
+If images are not loading (showing broken image icons), follow these steps:
 
-**Step 1: Verify the symlink exists**
-
-```bash
-# Check if symlink exists
-make shell
-ls -la /var/www/public/storage
-exit
-```
-
-**Step 2: Remove old symlink and recreate it**
+**Step 1: Create images directory structure**
 
 ```bash
-# Remove old symlink if it exists
+# Create the images/articles directory
 make shell-root
-rm -rf /var/www/public/storage
-exit
-
-# Create new symlink
-make storage-link
-```
-
-**Step 3: Verify storage directory has files**
-
-```bash
-# Check if images exist in storage
-make shell
-ls -la /var/www/storage/app/public/images/articles/
+mkdir -p /var/www/public/images/articles
+chown -R www-data:www-data /var/www/public/images
+chmod -R 755 /var/www/public/images
 exit
 ```
 
-**Step 4: Fix permissions on storage directory**
-
-```bash
-# Set correct permissions
-make shell-root
-chown -R www-data:www-data /var/www/storage/app/public
-chmod -R 755 /var/www/storage/app/public
-exit
-```
-
-**Step 5: Restart Nginx container** (after updating nginx config)
-
-```bash
-# After updating nginx/default.conf, restart nginx
-docker-compose -f docker/docker-compose.yml restart socialshare-nginx-service
-
-# Or using Make
-make restart
-```
-
-**Windows Alternative (if symlink still doesn't work):**
-
-The Nginx configuration has been updated to serve storage files directly without requiring a symlink. After updating the config file, restart the Nginx container:
-
+**Windows:**
 ```powershell
-# Restart Nginx to apply config changes
-docker-compose -f docker/docker-compose.yml restart socialshare-nginx-service
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service mkdir -p /var/www/public/images/articles
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chown -R www-data:www-data /var/www/public/images
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/public/images
 ```
 
-**Verify it's working:**
+**Step 2: Check if image files actually exist**
 
-1. Check browser console for 404 errors on image URLs
-2. Visit http://localhost:8080/storage/images/articles/ directly (should show directory listing or files)
-3. Check Laravel logs: `make logs` or `docker-compose -f docker/docker-compose.yml logs socialshare-php-service`
+The database may reference image filenames (like `3600974.webp`), but the actual files might not exist. Check:
+
+```bash
+# Check if images exist in public/images/articles/
+make shell
+ls -la /var/www/public/images/articles/
+exit
+```
+
+**If the directory is empty**, the images referenced in the database don't exist. You have two options:
+
+**Option A: Use placeholder images (Quick Fix)**
+
+```bash
+# Create a placeholder image
+make shell
+cd /var/www/storage/app/public/images/articles
+# Download a sample image or create one
+# For now, articles will work but show broken images until real images are uploaded
+exit
+```
+
+**Option B: Images will work when you upload them through the admin panel**
+
+The admin panel can upload images, which will create the files automatically.
+
+**Step 3: Fix permissions and verify**
+
+```bash
+# Ensure permissions are correct
+make shell-root
+chown -R www-data:www-data /var/www/public/images
+chmod -R 755 /var/www/public/images
+exit
+```
+
+**Windows:**
+```powershell
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chown -R www-data:www-data /var/www/public/images
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/public/images
+```
+
+**Step 4: Verify it's working**
+
+1. **Check if the directory is accessible:**
+   - Visit: http://localhost:8080/images/articles/
+   - You should see either a directory listing or a 404 (if empty, that's normal)
+
+2. **Check browser console (F12):**
+   - Look for 404 errors on image URLs
+   - The URL should be: `http://localhost:8080/images/articles/3600974.webp`
+   - If you see 404, the file doesn't exist (which is expected if you haven't uploaded images yet)
+
+3. **Check Laravel logs:**
+   ```bash
+   make logs
+   # or
+   docker-compose -f docker/docker-compose.yml logs socialshare-php-service
+   ```
+
+**Important Note:** The seeded articles reference image filenames, but the actual image files are not included in the repository. Images will display correctly once you:
+- Upload images through the admin panel, OR
+- Manually place image files in `laravel/public/images/articles/`
+
+> **Git Note**: Uploaded images in `public/images/articles/` are intentionally excluded from git (see `.gitignore`). This means:
+> - `git push` will NOT upload image files (this is correct!)
+> - Images are stored directly in `public/images/articles/` - no symlink needed!
+> - Uploaded images are local to each environment and won't be synced via git
 
 ## 📊 Services & Ports
 
