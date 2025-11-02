@@ -150,6 +150,8 @@ This single command will:
 - Cache configuration
 - Run database migrations
 
+> **Important**: After running `make setup`, you may need to set storage permissions. See step 4 below.
+
 **Option B: Manual Setup**
 
 ```bash
@@ -176,17 +178,63 @@ make vite-build
 
 # Clear and cache configuration
 make cache
+
+# Set storage permissions (important!)
+make storage-link
+make shell-root
+chown -R www-data:www-data /var/www/storage
+chmod -R 755 /var/www/storage
+chmod -R 755 /var/www/bootstrap/cache
+exit
 ```
 
-### 4. Access the Application
+### 4. Set Storage Permissions
+
+Laravel needs write permissions on the `storage` and `bootstrap/cache` directories. After starting containers, set the permissions:
+
+**Using Make:**
+
+```bash
+# Create storage symlink
+make storage-link
+
+# Fix storage permissions
+make shell-root
+chown -R www-data:www-data /var/www/storage
+chmod -R 755 /var/www/storage
+chmod -R 755 /var/www/bootstrap/cache
+exit
+```
+
+**Windows (PowerShell/CMD):**
+
+```powershell
+# Create storage symlink
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan storage:link
+
+# Fix storage permissions (as root)
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chown -R www-data:www-data /var/www/storage
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/storage
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/bootstrap/cache
+```
+
+> **Note**: Storage permissions are required for file uploads, logging, and caching to work properly.
+
+### 5. Access the Application
 
 Once setup is complete, you can access:
 
 - **Main Application**: http://localhost:8080
+- **Admin Panel**: http://localhost:8080/admin/login
+  - **Username/Email**: `admin@test.com`
+  - **Password**: `admin12345`
+  - After login, you'll be redirected to the admin dashboard at http://localhost:8080/admin/dashboard
 - **phpMyAdmin**: http://localhost:8081
   - Username: `socialshare`
   - Password: `socialshare`
   - Server: `socialshare-db-service`
+
+> **Security Note**: Please change the default admin password after first login in production environments!
 
 ## 🪟 Windows Setup (Without Make/WSL)
 
@@ -218,7 +266,15 @@ docker-compose -f docker/docker-compose.yml exec socialshare-php-service php art
 # 6. Build frontend assets
 docker-compose -f docker/docker-compose.yml exec socialshare-php-service npm run build
 
-# 7. Cache configuration
+# 7. Create storage symlink
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan storage:link
+
+# 8. Set storage permissions (important!)
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chown -R www-data:www-data /var/www/storage
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/storage
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/bootstrap/cache
+
+# 9. Cache configuration
 docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan config:cache
 docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan route:cache
 ```
@@ -262,11 +318,17 @@ docker-compose -f docker/docker-compose.yml exec socialshare-php-service npm ins
 
 Write-Host "Setting up application..."
 docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan key:generate
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan storage:link
 docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan migrate
 docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan db:seed
 docker-compose -f docker/docker-compose.yml exec socialshare-php-service npm run build
 docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan config:cache
 docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan route:cache
+
+Write-Host "Setting storage permissions..."
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chown -R www-data:www-data /var/www/storage
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/storage
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/bootstrap/cache
 
 Write-Host "Setup complete! Visit http://localhost:8080"
 ```
