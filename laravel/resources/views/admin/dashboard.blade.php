@@ -3,14 +3,14 @@
 @section('title', 'Dashboard - SocialShare')
 
 @section('sidebar-nav')
-    <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-3 px-4 py-3 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg theme-transition">
-        <i class="fas fa-share-alt"></i>
-        <span class="font-medium">Dashboard</span>
+    <a href="{{ route('admin.dashboard') }}" class="sidebar-nav-link flex items-center space-x-3 px-4 py-3 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg theme-transition">
+        <i class="fas fa-share-alt flex-shrink-0"></i>
+        <span class="sidebar-text font-medium">Dashboard</span>
     </a>
 @endsection
 
 @section('header')
-    <div class="flex items-center justify-between px-6 py-4">
+    <div class="flex items-center justify-between w-full">
         <div class="flex items-center space-x-4">
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white theme-transition">Dashboard</h2>
         </div>

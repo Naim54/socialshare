@@ -1,4 +1,4 @@
-.PHONY: help build up down restart logs shell composer artisan npm migrate fresh seed test clean
+.PHONY: help build up down restart logs shell composer artisan npm migrate fresh seed test clean permissions setup
 
 # Variables
 DOCKER_COMPOSE = docker-compose -f docker/docker-compose.yml
@@ -38,6 +38,8 @@ help:
 	@echo "  make db-shell       - Access MySQL shell"
 	@echo "  make db-reset       - Reset database (drop and recreate)"
 	@echo "  make status         - Show container status"
+	@echo "  make permissions    - Fix file permissions for storage, bootstrap, and public"
+	@echo "  make setup          - Complete setup (build, start, install, configure)"
 
 # Docker commands
 build:
@@ -169,8 +171,18 @@ db-reset:
 		echo "Cancelled."; \
 	fi
 
+# Permissions
+permissions:
+	@echo "Setting file permissions..."
+	$(DOCKER_COMPOSE) exec -u root socialshare-php-service chown -R www-data:www-data /var/www/storage
+	$(DOCKER_COMPOSE) exec -u root socialshare-php-service chmod -R 755 /var/www/storage
+	$(DOCKER_COMPOSE) exec -u root socialshare-php-service chmod -R 755 /var/www/bootstrap/cache
+	$(DOCKER_COMPOSE) exec -u root socialshare-php-service chown -R www-data:www-data /var/www/public/images
+	$(DOCKER_COMPOSE) exec -u root socialshare-php-service chmod -R 755 /var/www/public/images
+	@echo "Permissions set successfully!"
+
 # Setup commands
-setup: build up composer-install npm-install key cache migrate seed
+setup: build up composer-install npm-install key permissions cache migrate seed
 	@echo "Setup complete! Visit http://localhost:8080"
 
 # Cleanup commands

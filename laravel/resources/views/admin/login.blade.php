@@ -107,7 +107,7 @@
         }
     </style>
 </head>
-<body class="font-inter min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 relative overflow-hidden">
+<body class="font-inter min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 relative overflow-y-auto">
     <!-- Floating Background Shapes -->
     <div class="floating-shapes">
         <div class="shape"></div>
@@ -124,42 +124,42 @@
     </div>
 
     <!-- Main Container -->
-    <div class="relative z-10 min-h-screen flex items-center justify-center p-3 sm:p-4 md:p-6">
-        <div class="w-full max-w-6xl">
+    <div class="relative z-10 min-h-screen flex items-start justify-center p-2 sm:p-4 md:p-6 py-3 sm:py-4 md:py-8">
+        <div class="w-full max-w-6xl my-auto lg:my-0">
             <!-- Main Card Container -->
             <div class="flex flex-col lg:flex-row bg-white/80 backdrop-blur-xl rounded-2xl md:rounded-3xl shadow-2xl overflow-hidden border border-white/20">
                 
                 <!-- Left Side - Login Form -->
-                <div class="flex-1 p-4 sm:p-6 md:p-8 lg:p-12 flex flex-col justify-center">
+                <div class="flex-1 p-3 sm:p-6 md:p-8 lg:p-12 flex flex-col justify-start lg:justify-center min-h-0">
                     <!-- Header -->
-                    <div class="text-center mb-6 md:mb-8 animate-fade-in">
-                        <div class="inline-flex items-center justify-center mb-3 md:mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary sm:w-[48px] sm:h-[48px] md:w-[56px] md:h-[56px]">
+                    <div class="text-center mb-3 sm:mb-4 md:mb-6 lg:mb-8 animate-fade-in">
+                        <div class="inline-flex items-center justify-center mb-1.5 sm:mb-2 md:mb-3 lg:mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary sm:w-[40px] sm:h-[40px] md:w-[48px] md:h-[48px] lg:w-[56px] lg:h-[56px]">
                                 <rect x="3" y="3" width="7" height="7"></rect>
                                 <rect x="14" y="3" width="7" height="7"></rect>
                                 <rect x="14" y="14" width="7" height="7"></rect>
                                 <rect x="3" y="14" width="7" height="7"></rect>
                             </svg>
                         </div>
-                        <p class="text-gray-600 text-sm sm:text-base md:text-lg">Sign in to your SocialShare admin account</p>
+                        <p class="text-gray-600 text-xs sm:text-sm md:text-base lg:text-lg">Sign in to your SocialShare admin account</p>
                     </div>
 
                     <!-- Error Message -->
                     @if($errors->any())
-                        <div class="alert alert-error mb-4 md:mb-6 animate-slide-up text-sm">
+                        <div class="alert alert-error mb-2 sm:mb-3 md:mb-4 lg:mb-6 animate-slide-up text-sm">
                             <i class="fas fa-exclamation-circle"></i>
                             <span>{{ $errors->first() }}</span>
                         </div>
                     @endif
 
                     <!-- Login Form -->
-                    <form method="POST" action="{{ route('admin.login.submit') }}" class="space-y-4 md:space-y-6 animate-slide-up">
+                    <form method="POST" action="{{ route('admin.login.submit') }}" class="space-y-2.5 sm:space-y-3 md:space-y-4 lg:space-y-6 animate-slide-up pb-2 sm:pb-0">
         @csrf
                         
                         <!-- Email Field -->
                         <div class="form-control">
-                            <label class="label py-1 sm:py-2">
-                                <span class="label-text text-gray-700 font-medium text-sm sm:text-base">Email Address</span>
+                            <label class="label py-0.5 sm:py-1 md:py-2">
+                                <span class="label-text text-gray-700 font-medium text-xs sm:text-sm md:text-base">Email Address</span>
                             </label>
                             <div class="relative">
                                 <input 
@@ -167,28 +167,28 @@
                                     name="email" 
                                     placeholder="admin@example.com"
                                     value="{{ old('email') }}"
-                                    class="input input-bordered w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3 md:py-4 text-sm sm:text-base md:text-lg focus:input-primary transition-all duration-300"
+                                    class="input input-bordered w-full pl-9 sm:pl-10 md:pl-12 pr-3 sm:pr-4 py-2 sm:py-2.5 md:py-3 lg:py-4 text-xs sm:text-sm md:text-base lg:text-lg focus:input-primary transition-all duration-300"
                                     required
                                 />
-                                <i class="fas fa-envelope absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm sm:text-base"></i>
+                                <i class="fas fa-envelope absolute left-2.5 sm:left-3 md:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs sm:text-sm md:text-base"></i>
                             </div>
                         </div>
 
                         <!-- Password Field -->
                         <div class="form-control">
-                            <label class="label py-1 sm:py-2">
-                                <span class="label-text text-gray-700 font-medium text-sm sm:text-base">Password</span>
+                            <label class="label py-0.5 sm:py-1 md:py-2">
+                                <span class="label-text text-gray-700 font-medium text-xs sm:text-sm md:text-base">Password</span>
                             </label>
                             <div class="relative">
                                 <input 
                                     type="password" 
                                     name="password" 
                                     placeholder="Enter your password"
-                                    class="input input-bordered w-full pl-10 sm:pl-12 pr-16 sm:pr-20 py-2.5 sm:py-3 md:py-4 text-sm sm:text-base md:text-lg focus:input-primary transition-all duration-300"
+                                    class="input input-bordered w-full pl-9 sm:pl-10 md:pl-12 pr-14 sm:pr-16 md:pr-20 py-2 sm:py-2.5 md:py-3 lg:py-4 text-xs sm:text-sm md:text-base lg:text-lg focus:input-primary transition-all duration-300"
                                     required
                                 />
-                                <i class="fas fa-lock absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm sm:text-base"></i>
-                                <a href="#" class="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-xs sm:text-sm text-primary hover:text-primary-focus transition-colors whitespace-nowrap">
+                                <i class="fas fa-lock absolute left-2.5 sm:left-3 md:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-xs sm:text-sm md:text-base"></i>
+                                <a href="#" class="absolute right-2.5 sm:right-3 md:right-4 top-1/2 transform -translate-y-1/2 text-xs sm:text-sm text-primary hover:text-primary-focus transition-colors whitespace-nowrap">
                                     Forgot?
                                 </a>
                             </div>
@@ -196,15 +196,15 @@
 
                         <!-- Remember Me -->
                         <div class="form-control">
-                            <label class="label cursor-pointer justify-start gap-2 sm:gap-3 py-1 sm:py-2">
-                                <input type="checkbox" class="checkbox checkbox-primary checkbox-sm sm:checkbox-md" />
+                            <label class="label cursor-pointer justify-start gap-1.5 sm:gap-2 md:gap-3 py-0.5 sm:py-1 md:py-2">
+                                <input type="checkbox" class="checkbox checkbox-primary checkbox-xs sm:checkbox-sm md:checkbox-md" />
                                 <span class="label-text text-gray-600 text-xs sm:text-sm md:text-base">Remember me for 30 days</span>
                             </label>
                         </div>
 
                         <!-- Login Button -->
-                        <button type="submit" class="flex items-center justify-center gap-2 w-full py-3 sm:py-3.5 md:py-4 text-sm sm:text-base md:text-lg font-semibold text-white bg-[#027cb3] rounded-lg sm:rounded-xl shadow-md hover:bg-[#026a99] active:scale-95 transition-all duration-300 md:transform md:hover:scale-105 hover:shadow-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <button type="submit" class="flex items-center justify-center gap-2 w-full py-2.5 sm:py-3 md:py-3.5 lg:py-4 text-xs sm:text-sm md:text-base lg:text-lg font-semibold text-white bg-[#027cb3] rounded-lg sm:rounded-xl shadow-md hover:bg-[#026a99] active:scale-95 transition-all duration-300 md:transform md:hover:scale-105 hover:shadow-lg mt-1 sm:mt-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                             </svg>
                             <span>Submit</span>

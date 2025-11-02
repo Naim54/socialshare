@@ -27,7 +27,7 @@ Download and install Docker Desktop for your operating system:
 - **Windows/Mac**: Download from [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/)
 - **Linux**: Follow the [Docker Engine installation guide](https://docs.docker.com/engine/install/)
 
-Docker Desktop includes both Docker and Docker Compose, so you don't need to install them separately.
+> **Note**: Docker Desktop includes both Docker and Docker Compose, so you don't need to install them separately.
 
 ### Verify Installation
 
@@ -38,296 +38,170 @@ git --version
 make --version  # Optional (only if you want to use Make commands)
 ```
 
-> **Note for Windows Users**: If you don't have WSL (Windows Subsystem for Linux) or Make installed, you can use Docker Compose commands directly. See the [Windows Setup (Without Make/WSL)](#-windows-setup-without-makewsl) section below.
-
 ## 🛠️ Installation & Setup
 
-### 1. Clone the Repository
+### Step 1: Clone the Repository
 
 ```bash
 git clone https://github.com/Naim54/socialshare.git
 cd socialshare
 ```
 
-### 2. Environment Configuration
+### Step 2: Configure Environment
 
-Create a `.env` file in the `laravel` directory:
+Create a `.env` file in the `laravel` directory and copy all content from the `envtocopy` file:
 
+```bash
+# On Linux/Mac
+cp envtocopy laravel/.env
 
-
-### Copy this into .env
-
-```env
-
-
-APP_NAME=Laravel
-APP_ENV=local
-APP_KEY=base64:E9ISCwd69rvoKORv5VxTSGTZIMDuqrBlDmvu9RhE5pw=
-APP_DEBUG=true
-APP_TIMEZONE=Asia/Kuala_Lumpur
-APP_URL=http://localhost:8080
-
-APP_LOCALE=en
-APP_FALLBACK_LOCALE=en
-APP_FAKER_LOCALE=en_US
-
-APP_MAINTENANCE_DRIVER=file
-# APP_MAINTENANCE_STORE=database
-
-PHP_CLI_SERVER_WORKERS=4
-
-BCRYPT_ROUNDS=12
-
-LOG_CHANNEL=stack
-LOG_STACK=single
-LOG_DEPRECATIONS_CHANNEL=null
-LOG_LEVEL=debug
-
-DB_CONNECTION=mysql
-DB_HOST=socialshare-db-service
-DB_PORT=3306
-DB_DATABASE=socialshare
-DB_USERNAME=socialshare
-DB_PASSWORD=socialshare
-
-SESSION_DRIVER=redis
-SESSION_LIFETIME=120
-SESSION_ENCRYPT=false
-SESSION_PATH=/
-SESSION_DOMAIN=null
-SESSION_CONNECTION=default
-SESSION_STORE=redis
-
-BROADCAST_CONNECTION=log
-FILESYSTEM_DISK=local
-QUEUE_CONNECTION=database
-
-
-CACHE_PREFIX=
-
-MEMCACHED_HOST=127.0.0.1
-
-REDIS_CLIENT=predis
-REDIS_HOST=socialshare-redis-service
-REDIS_USERNAME=null
-REDIS_PASSWORD=null
-REDIS_PORT=6379
-REDIS_DB=0
-QUEUE_CONNECTION=redis
-CACHE_PREFIX=
-CACHE_STORE=redis
-REDIS_CACHE_DB=1 
-
-MAIL_MAILER=log
-MAIL_SCHEME=null
-MAIL_HOST=127.0.0.1
-MAIL_PORT=2525
-MAIL_USERNAME=null
-MAIL_PASSWORD=null
-MAIL_FROM_ADDRESS="hello@example.com"
-MAIL_FROM_NAME="${APP_NAME}"
-
-
-
-REDIS_CLUSTER=false
-
+# On Windows (PowerShell)
+Copy-Item envtocopy laravel\.env
 ```
 
-### 3. Build and Start Containers
+> **Note**: The `envtocopy` file contains all the necessary environment variables pre-configured for Docker.
 
-**Option A: Using Make (Recommended)**
+### Step 3: Build and Start the Application
+
+**Option A: Using Make (Recommended - Linux/Mac/WSL)**
+
+Run this single command to set everything up:
 
 ```bash
 make setup
 ```
 
-This single command will:
+This will automatically:
 - Build Docker containers
 - Start all services
 - Install Composer dependencies
 - Install NPM dependencies
 - Generate application key
+- Set file permissions (storage, bootstrap/cache, public/images)
 - Cache configuration
 - Run database migrations
-
-> **Note**: Images are stored directly in `public/images/articles/` - no symlink needed! This makes setup easier, especially on Windows.
+- Set up database seeders
 
 **Option B: Manual Setup**
 
+If you prefer to run commands manually or don't have Make installed:
+
 ```bash
-# Build containers
-make build
+# Build and start containers
+docker-compose -f docker/docker-compose.yml build
+docker-compose -f docker/docker-compose.yml up -d
 
-# Start containers
-make up
+# Wait a few seconds for containers to initialize, then:
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chown -R www-data:www-data /var/www/storage
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/storage
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/bootstrap/cache
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/public/images
 
-# Install Composer dependencies
-make composer-install
+# Install PHP dependencies
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service composer install --no-scripts
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan package:discover
 
 # Install NPM dependencies
-make npm-install
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service npm install
 
 # Generate application key
-make key
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan key:generate
 
-# Run database migrations
-make migrate
+# Run database migrations and seeders
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan migrate
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan db:seed
 
 # Build frontend assets
-make vite-build
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service npm run build
 
-# Clear and cache configuration
-make cache
-
-# Set permissions (important!)
-make shell-root
-chown -R www-data:www-data /var/www/storage
-chmod -R 755 /var/www/storage
-chmod -R 755 /var/www/bootstrap/cache
-chmod -R 755 /var/www/public/images
-exit
+# Cache configuration
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan config:cache
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan route:cache
 ```
 
-### 4. Set Permissions
+**Option C: Windows PowerShell Script**
 
-Set proper permissions for storage, cache, and public images directories:
-
-**Using Make:**
-
-```bash
-# Fix permissions
-make shell-root
-chown -R www-data:www-data /var/www/storage
-chmod -R 755 /var/www/storage
-chmod -R 755 /var/www/bootstrap/cache
-chmod -R 755 /var/www/public/images
-exit
-```
-
-**Windows (PowerShell/CMD):**
+If you're on Windows, you can use this PowerShell script to automate setup:
 
 ```powershell
-# Fix permissions (as root)
+# Create setup.ps1 file with the following content:
+
+Write-Host "Building containers..." -ForegroundColor Cyan
+docker-compose -f docker/docker-compose.yml build
+
+Write-Host "Starting containers..." -ForegroundColor Cyan
+docker-compose -f docker/docker-compose.yml up -d
+
+Write-Host "Waiting for containers to be ready..." -ForegroundColor Yellow
+Start-Sleep -Seconds 10
+
+Write-Host "Installing dependencies..." -ForegroundColor Cyan
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service composer install --no-scripts
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan package:discover
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service npm install
+
+Write-Host "Setting up application..." -ForegroundColor Cyan
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan key:generate
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan migrate
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan db:seed
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service npm run build
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan config:cache
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan route:cache
+
+Write-Host "Setting permissions..." -ForegroundColor Cyan
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chown -R www-data:www-data /var/www/storage
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/storage
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/bootstrap/cache
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/public/images
+
+Write-Host "`n✅ Setup complete! Visit http://localhost:8080" -ForegroundColor Green
+```
+
+Run it with: `.\setup.ps1`
+
+> **Note**: You may need to run `Set-ExecutionPolicy RemoteSigned` first if you get a permission error.
+
+### Step 4: Set File Permissions
+
+> **Note**: If you used `make setup` (Option A), permissions are already set automatically. Skip this step if you used `make setup`.
+
+This step is important for Laravel to function properly (only needed if you did manual setup):
+
+**Using Make (Easiest):**
+```bash
+make permissions
+```
+
+**Or manually:**
+```bash
+make shell-root
+chown -R www-data:www-data /var/www/storage
+chmod -R 755 /var/www/storage
+chmod -R 755 /var/www/bootstrap/cache
+chown -R www-data:www-data /var/www/public/images
+chmod -R 755 /var/www/public/images
+exit
+```
+
+**Using Docker Compose directly:**
+```bash
 docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chown -R www-data:www-data /var/www/storage
 docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/storage
 docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/bootstrap/cache
 docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/public/images
 ```
 
-> **Note**: Images are stored directly in `public/images/articles/` (no symlink needed!). This makes setup easier, especially on Windows.
-
-### 5. Access the Application
+### Step 5: Access the Application
 
 Once setup is complete, you can access:
 
-- **Main Application**: http://localhost:8080
-- **Admin Panel**: http://localhost:8080/admin/login
-  - **Username/Email**: `admin@test.com`
-  - **Password**: `admin12345`
-  - After login, you'll be redirected to the admin dashboard at http://localhost:8080/admin/dashboard
-- **phpMyAdmin**: http://localhost:8081
-  - Username: `socialshare`
-  - Password: `socialshare`
-  - Server: `socialshare-db-service`
+| Service | URL | Credentials |
+|---------|-----|-------------|
+| **Main Application** | http://localhost:8080 | N/A |
+| **Admin Panel** | http://localhost:8080/admin/login | Email: `admin@test.com`<br>Password: `admin12345` |
+| **phpMyAdmin** | http://localhost:8081 | Username: `socialshare`<br>Password: `socialshare`<br>Server: `socialshare-db-service` |
 
-> **Security Note**: Please change the default admin password after first login in production environments!
-
-## 🪟 Windows Setup (Without Make/WSL)
-
-If you're on Windows and don't have WSL or Make installed, you can use Docker Compose commands directly. Docker Desktop works perfectly on Windows without WSL.
-
-### Quick Setup (Windows)
-
-Open **PowerShell** or **Command Prompt** in the project directory and run:
-
-```powershell
-# 1. Build and start containers
-docker-compose -f docker/docker-compose.yml build
-docker-compose -f docker/docker-compose.yml up -d
-
-# 2. Wait a few seconds for containers to be ready, then install dependencies
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service composer install --no-scripts
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan package:discover
-
-# 3. Install NPM dependencies
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service npm install
-
-# 4. Generate application key
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan key:generate
-
-# 5. Run migrations and seeders
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan migrate
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan db:seed
-
-# 6. Build frontend assets
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service npm run build
-
-# 7. Set permissions (important!)
-docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chown -R www-data:www-data /var/www/storage
-docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/storage
-docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/bootstrap/cache
-docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/public/images
-
-# 8. Cache configuration
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan config:cache
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan route:cache
-```
-
-> **Note**: You can use either `docker-compose` (hyphen) or `docker compose` (space) - both work with Docker Desktop. The commands above use `docker-compose` for consistency with the Makefile.
-
-### Common Commands (Windows - PowerShell/CMD)
-
-Replace `make <command>` with these Docker Compose equivalents:
-
-| Make Command | Windows Equivalent |
-|--------------|-------------------|
-| `make up` | `docker-compose -f docker/docker-compose.yml up -d` |
-| `make down` | `docker-compose -f docker/docker-compose.yml down` |
-| `make logs` | `docker-compose -f docker/docker-compose.yml logs` |
-| `make shell` | `docker-compose -f docker/docker-compose.yml exec socialshare-php-service bash` |
-| `make migrate` | `docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan migrate` |
-| `make seed` | `docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan db:seed` |
-| `make npm-build` | `docker-compose -f docker/docker-compose.yml exec socialshare-php-service npm run build` |
-| `make cache` | `docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan config:cache` |
-
-### PowerShell Script (Optional)
-
-You can create a PowerShell script (`setup.ps1`) to automate the setup:
-
-```powershell
-# setup.ps1
-Write-Host "Building containers..."
-docker-compose -f docker/docker-compose.yml build
-
-Write-Host "Starting containers..."
-docker-compose -f docker/docker-compose.yml up -d
-
-Write-Host "Waiting for containers to be ready..."
-Start-Sleep -Seconds 10
-
-Write-Host "Installing dependencies..."
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service composer install --no-scripts
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan package:discover
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service npm install
-
-Write-Host "Setting up application..."
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan key:generate
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan migrate
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan db:seed
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service npm run build
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan config:cache
-docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan route:cache
-
-Write-Host "Setting permissions..."
-docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chown -R www-data:www-data /var/www/storage
-docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/storage
-docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/bootstrap/cache
-docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/public/images
-
-Write-Host "Setup complete! Visit http://localhost:8080"
-```
-
-Run it with: `.\setup.ps1` (you may need to run `Set-ExecutionPolicy RemoteSigned` first if you get a permission error)
+> ⚠️ **Security Note**: Please change the default admin password after first login in production environments!
 
 ## 📁 Project Structure
 
@@ -337,22 +211,37 @@ socialshare/
 │   ├── docker-compose.yml    # Docker Compose configuration
 │   └── Dockerfile            # Multi-stage Docker build
 ├── laravel/                  # Laravel application
-│   ├── app/
-│   ├── config/
-│   ├── database/
-│   ├── resources/
-│   ├── routes/
-│   └── ...
-├── nginx/                    # Nginx configuration
+│   ├── app/                  # Application code
+│   ├── config/               # Configuration files
+│   ├── database/              # Migrations, seeders, factories
+│   ├── resources/             # Views, assets, lang files
+│   ├── routes/                # Route definitions
+│   └── public/                # Public assets (images stored here)
+├── nginx/                     # Nginx configuration
 │   └── default.conf
-├── Makefile                  # Convenience commands
+├── Makefile                   # Convenience commands
+├── envtocopy                  # Environment template
 └── README.md
 ```
 
+> **Note**: Images are stored directly in `laravel/public/images/articles/` - no symlink needed! This makes setup easier, especially on Windows.
+
 ## 🎯 Common Commands
 
-### Docker Operations
+### Quick Reference
 
+| Task | Make Command | Docker Compose Equivalent |
+|------|-------------|---------------------------|
+| Start containers | `make up` | `docker-compose -f docker/docker-compose.yml up -d` |
+| Stop containers | `make down` | `docker-compose -f docker/docker-compose.yml down` |
+| View logs | `make logs` | `docker-compose -f docker/docker-compose.yml logs` |
+| Access shell | `make shell` | `docker-compose -f docker/docker-compose.yml exec socialshare-php-service bash` |
+| Run migrations | `make migrate` | `docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan migrate` |
+| Build assets | `make vite-build` | `docker-compose -f docker/docker-compose.yml exec socialshare-php-service npm run build` |
+
+### Detailed Command List
+
+**Docker Operations:**
 ```bash
 make build          # Build Docker containers
 make up             # Start all containers
@@ -365,30 +254,20 @@ make clean          # Clean Docker resources
 make rebuild        # Rebuild containers from scratch
 ```
 
-### Container Access
-
-```bash
-make shell          # Access PHP container shell
-make shell-root     # Access PHP container as root
-make db-shell       # Access MySQL shell
-```
-
-### Laravel Operations
-
+**Laravel Operations:**
 ```bash
 make artisan ARGS='command'  # Run any artisan command
 make migrate                  # Run database migrations
 make fresh                    # Fresh migration (drops all tables)
 make seed                     # Run database seeders
 make key                      # Generate application key
-make storage-link             # Create storage symlink
 make cache                    # Clear and cache config/routes
 make optimize                 # Optimize Laravel for production
 make test                     # Run PHPUnit tests
+make permissions              # Fix file permissions (storage, bootstrap, public)
 ```
 
-### Frontend Operations
-
+**Frontend Operations:**
 ```bash
 make npm-install    # Install NPM dependencies
 make npm-build      # Build assets with Vite
@@ -396,29 +275,28 @@ make npm-dev        # Run Vite dev server (hot reload)
 make vite-build     # Build assets with Vite
 ```
 
-### Combined Operations
-
+**Container Access:**
 ```bash
-make install       # Install both Composer and NPM dependencies
-make update        # Update dependencies and rebuild assets
-make refresh       # Run migrations, seeders, and cache
+make shell          # Access PHP container shell
+make shell-root     # Access PHP container as root
+make db-shell       # Access MySQL shell
 ```
 
 ## 🔧 Development Workflow
 
-### Running in Development Mode
+### Starting Development
 
-1. Start containers:
+1. **Start containers:**
    ```bash
    make up
    ```
 
-2. Start Vite dev server (for hot module replacement):
+2. **Start Vite dev server** (for hot module replacement):
    ```bash
    make npm-dev
    ```
 
-3. Access the application at http://localhost:8080
+3. **Access the application** at http://localhost:8080
 
 ### Making Changes
 
@@ -437,25 +315,42 @@ make db-shell
 
 ## 🐛 Troubleshooting
 
-### Containers won't start
+### Containers Won't Start
 
+**Check if ports are in use:**
 ```bash
-# Check if ports are already in use
+# Linux/Mac
 netstat -tulpn | grep -E ':(8080|8081|3307|6379)'
 
-# Clean and rebuild
+# Windows (PowerShell)
+netstat -ano | findstr "8080 8081 3307 6379"
+```
+
+**Clean and rebuild:**
+```bash
 make clean
 make rebuild
 ```
 
 ### Permission Issues
 
+If you see permission errors, fix them with:
+
 ```bash
-# Fix storage permissions
 make shell-root
 chown -R www-data:www-data /var/www/storage
 chmod -R 755 /var/www/storage
+chmod -R 755 /var/www/bootstrap/cache
+chmod -R 755 /var/www/public/images
 exit
+```
+
+**Windows (PowerShell):**
+```powershell
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chown -R www-data:www-data /var/www/storage
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/storage
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/bootstrap/cache
+docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/public/images
 ```
 
 ### Application Key Missing
@@ -466,115 +361,53 @@ make key
 
 ### Database Connection Issues
 
-- Verify containers are running: `make status`
-- Check database is ready: `make db-shell`
-- Verify `.env` file has correct database credentials
+1. Verify containers are running: `make status`
+2. Check database is ready: `make db-shell`
+3. Verify `.env` file has correct database credentials
 
 ### Assets Not Loading
 
+**Rebuild assets:**
 ```bash
-# Rebuild assets
 make vite-build
+```
 
-# Or for development with hot reload
+**Or for development with hot reload:**
+```bash
 make npm-dev
 ```
+
+### Images Not Loading
+
+If images are not showing (broken image icons), check the following:
+
+1. **Verify the images directory exists:**
+   ```bash
+   make shell
+   ls -la /var/www/public/images/articles/
+   exit
+   ```
+
+2. **Fix permissions:**
+   ```bash
+   make shell-root
+   chown -R www-data:www-data /var/www/public/images
+   chmod -R 755 /var/www/public/images
+   exit
+   ```
+
+3. **Check if images exist:**
+   - The seeded articles include image files in the repository
+   - Visit: http://localhost:8080/images/articles/ to see if files exist
+   - If the directory is empty, images will work once you upload them through the admin panel
+
+> **Note**: Images are stored directly in `public/images/articles/` - no symlink needed. The repository includes seeded article images, so they should display correctly after setup.
 
 ### Clear All Caches
 
 ```bash
 make cache
 ```
-
-### Images Not Loading
-
-If images are not loading (showing broken image icons), follow these steps:
-
-**Step 1: Create images directory structure**
-
-```bash
-# Create the images/articles directory
-make shell-root
-mkdir -p /var/www/public/images/articles
-chown -R www-data:www-data /var/www/public/images
-chmod -R 755 /var/www/public/images
-exit
-```
-
-**Windows:**
-```powershell
-docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service mkdir -p /var/www/public/images/articles
-docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chown -R www-data:www-data /var/www/public/images
-docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/public/images
-```
-
-**Step 2: Check if image files actually exist**
-
-The database may reference image filenames (like `3600974.webp`), but the actual files might not exist. Check:
-
-```bash
-# Check if images exist in public/images/articles/
-make shell
-ls -la /var/www/public/images/articles/
-exit
-```
-
-**If the directory is empty**, the images referenced in the database don't exist. You have two options:
-
-**Option A: Use placeholder images (Quick Fix)**
-
-```bash
-# Create a placeholder image
-make shell
-cd /var/www/storage/app/public/images/articles
-# Download a sample image or create one
-# For now, articles will work but show broken images until real images are uploaded
-exit
-```
-
-**Option B: Images will work when you upload them through the admin panel**
-
-The admin panel can upload images, which will create the files automatically.
-
-**Step 3: Fix permissions and verify**
-
-```bash
-# Ensure permissions are correct
-make shell-root
-chown -R www-data:www-data /var/www/public/images
-chmod -R 755 /var/www/public/images
-exit
-```
-
-**Windows:**
-```powershell
-docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chown -R www-data:www-data /var/www/public/images
-docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service chmod -R 755 /var/www/public/images
-```
-
-**Step 4: Verify it's working**
-
-1. **Check if the directory is accessible:**
-   - Visit: http://localhost:8080/images/articles/
-   - You should see either a directory listing or a 404 (if empty, that's normal)
-
-2. **Check browser console (F12):**
-   - Look for 404 errors on image URLs
-   - The URL should be: `http://localhost:8080/images/articles/3600974.webp`
-   - If you see 404, the file doesn't exist (which is expected if you haven't uploaded images yet)
-
-3. **Check Laravel logs:**
-   ```bash
-   make logs
-   # or
-   docker-compose -f docker/docker-compose.yml logs socialshare-php-service
-   ```
-
-**Important Note:** The seeded articles include their image files in the repository, so images will display correctly after cloning and setup. Additional images can be:
-- Uploaded through the admin panel, OR
-- Manually placed in `laravel/public/images/articles/`
-
-> **Git Note**: Seed images (referenced by the database) in `public/images/articles/` are included in the repository so the application works out of the box. User-uploaded images (with timestamp format) will also be tracked unless explicitly ignored.
 
 ## 📊 Services & Ports
 
@@ -588,16 +421,20 @@ docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service
 
 ## 🔐 Default Credentials
 
-- **Database**: 
-  - Host: `socialshare-db-service` (from inside containers)
-  - Database: `socialshare`
-  - Username: `socialshare`
-  - Password: `socialshare`
-  - Root Password: `socialshare`
+**Database:**
+- Host: `socialshare-db-service` (from inside containers)
+- Database: `socialshare`
+- Username: `socialshare`
+- Password: `socialshare`
+- Root Password: `socialshare`
 
-- **phpMyAdmin**:
-  - Username: `socialshare`
-  - Password: `socialshare`
+**phpMyAdmin:**
+- Username: `socialshare`
+- Password: `socialshare`
+
+**Admin Panel:**
+- Email: `admin@test.com`
+- Password: `admin12345`
 
 ⚠️ **Important**: Change these credentials in production!
 
@@ -605,34 +442,7 @@ docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service
 
 Run the test suite:
 
-```bash
-make test
-```
 
-## 📝 API Endpoints
 
-The application provides REST API endpoints for tracking social shares. See `laravel/routes/api.php` for details.
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-
-## 🙋 Support
-
-If you encounter any issues or have questions:
-
-1. Check the [Troubleshooting](#-troubleshooting) section
-2. Review container logs: `make logs`
-3. Open an issue on GitHub
-
----
 
 **Happy Sharing! 🚀**
