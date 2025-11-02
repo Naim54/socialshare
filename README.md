@@ -1,61 +1,348 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SocialShare - Social Media Sharing Analytics Platform
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A Laravel-based application for tracking and analyzing social media shares across multiple platforms (Facebook, Twitter, WhatsApp, Telegram, Email). Built with Docker for easy deployment and development.
 
-## About Laravel
+## 🚀 Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Track social share clicks across multiple platforms
+- Analytics dashboard for social sharing metrics
+- Support for Facebook, Twitter, WhatsApp, Telegram, and Email sharing
+- Modern UI built with Laravel, Vite, and Tailwind CSS
+- Docker-based development environment
+- Redis caching for improved performance
+- MySQL database for data persistence
+- phpMyAdmin for database management
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 📋 Prerequisites
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Before you begin, ensure you have the following installed on your system:
 
-## Learning Laravel
+- **Docker** (version 20.10 or higher)
+- **Docker Compose** (version 2.0 or higher)
+- **Git** (for cloning the repository)
+- **Make** (optional, but recommended for easier command execution)
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Verify Installation
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+```bash
+docker --version
+docker-compose --version
+git --version
+make --version  # Optional
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 🛠️ Installation & Setup
 
-## Laravel Sponsors
+### 1. Clone the Repository
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+git clone https://github.com/Naim54/socialshare.git
+cd socialshare
+```
 
-### Premium Partners
+### 2. Environment Configuration
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Create a `.env` file in the `laravel` directory:
 
-## Contributing
+```bash
+cp laravel/.env.example laravel/.env
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+If `.env.example` doesn't exist, create a `.env` file with the following configuration:
 
-## Code of Conduct
+```env
+APP_NAME=SocialShare
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_TIMEZONE=UTC
+APP_URL=http://localhost:8080
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+DB_CONNECTION=mysql
+DB_HOST=socialshare-db-service
+DB_PORT=3306
+DB_DATABASE=socialshare
+DB_USERNAME=socialshare
+DB_PASSWORD=socialshare
 
-## Security Vulnerabilities
+REDIS_HOST=socialshare-redis-service
+REDIS_PORT=6379
+REDIS_PASSWORD=null
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+CACHE_DRIVER=redis
+SESSION_DRIVER=redis
+QUEUE_CONNECTION=redis
+```
 
-## License
+### 3. Build and Start Containers
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+**Option A: Using Make (Recommended)**
+
+```bash
+make setup
+```
+
+This single command will:
+- Build Docker containers
+- Start all services
+- Install Composer dependencies
+- Install NPM dependencies
+- Generate application key
+- Cache configuration
+- Run database migrations
+
+**Option B: Manual Setup**
+
+```bash
+# Build containers
+make build
+
+# Start containers
+make up
+
+# Install Composer dependencies
+make composer-install
+
+# Install NPM dependencies
+make npm-install
+
+# Generate application key
+make key
+
+# Run database migrations
+make migrate
+
+# Build frontend assets
+make vite-build
+
+# Clear and cache configuration
+make cache
+```
+
+### 4. Access the Application
+
+Once setup is complete, you can access:
+
+- **Main Application**: http://localhost:8080
+- **phpMyAdmin**: http://localhost:8081
+  - Username: `socialshare`
+  - Password: `socialshare`
+  - Server: `socialshare-db-service`
+
+## 📁 Project Structure
+
+```
+socialshare/
+├── docker/
+│   ├── docker-compose.yml    # Docker Compose configuration
+│   └── Dockerfile            # Multi-stage Docker build
+├── laravel/                  # Laravel application
+│   ├── app/
+│   ├── config/
+│   ├── database/
+│   ├── resources/
+│   ├── routes/
+│   └── ...
+├── nginx/                    # Nginx configuration
+│   └── default.conf
+├── Makefile                  # Convenience commands
+└── README.md
+```
+
+## 🎯 Common Commands
+
+### Docker Operations
+
+```bash
+make build          # Build Docker containers
+make up             # Start all containers
+make down           # Stop all containers
+make restart        # Restart all containers
+make logs           # View logs from all containers
+make logs-follow    # Follow logs (real-time)
+make status         # Show container status
+make clean          # Clean Docker resources
+make rebuild        # Rebuild containers from scratch
+```
+
+### Container Access
+
+```bash
+make shell          # Access PHP container shell
+make shell-root     # Access PHP container as root
+make db-shell       # Access MySQL shell
+```
+
+### Laravel Operations
+
+```bash
+make artisan ARGS='command'  # Run any artisan command
+make migrate                  # Run database migrations
+make fresh                    # Fresh migration (drops all tables)
+make seed                     # Run database seeders
+make key                      # Generate application key
+make storage-link             # Create storage symlink
+make cache                    # Clear and cache config/routes
+make optimize                 # Optimize Laravel for production
+make test                     # Run PHPUnit tests
+```
+
+### Frontend Operations
+
+```bash
+make npm-install    # Install NPM dependencies
+make npm-build      # Build assets with Vite
+make npm-dev        # Run Vite dev server (hot reload)
+make vite-build     # Build assets with Vite
+```
+
+### Combined Operations
+
+```bash
+make install       # Install both Composer and NPM dependencies
+make update        # Update dependencies and rebuild assets
+make refresh       # Run migrations, seeders, and cache
+```
+
+## 🔧 Development Workflow
+
+### Running in Development Mode
+
+1. Start containers:
+   ```bash
+   make up
+   ```
+
+2. Start Vite dev server (for hot module replacement):
+   ```bash
+   make npm-dev
+   ```
+
+3. Access the application at http://localhost:8080
+
+### Making Changes
+
+- **PHP/Laravel changes**: Edit files in `laravel/` directory (changes reflect immediately due to volume mounting)
+- **Frontend changes**: Edit files in `laravel/resources/` - Vite will auto-reload if dev server is running
+- **After adding new packages**: Run `make composer-install` or `make npm-install`
+- **After code changes**: No restart needed, but you may need to run `make cache` to clear config cache
+
+### Database Management
+
+Access phpMyAdmin at http://localhost:8081 or use MySQL shell:
+
+```bash
+make db-shell
+```
+
+## 🐛 Troubleshooting
+
+### Containers won't start
+
+```bash
+# Check if ports are already in use
+netstat -tulpn | grep -E ':(8080|8081|3307|6379)'
+
+# Clean and rebuild
+make clean
+make rebuild
+```
+
+### Permission Issues
+
+```bash
+# Fix storage permissions
+make shell-root
+chown -R www-data:www-data /var/www/storage
+chmod -R 755 /var/www/storage
+exit
+```
+
+### Application Key Missing
+
+```bash
+make key
+```
+
+### Database Connection Issues
+
+- Verify containers are running: `make status`
+- Check database is ready: `make db-shell`
+- Verify `.env` file has correct database credentials
+
+### Assets Not Loading
+
+```bash
+# Rebuild assets
+make vite-build
+
+# Or for development with hot reload
+make npm-dev
+```
+
+### Clear All Caches
+
+```bash
+make cache
+```
+
+## 📊 Services & Ports
+
+| Service | Container Name | Port | Description |
+|---------|---------------|------|-------------|
+| Nginx | socialshare-nginx-container | 8080 | Web server |
+| PHP-FPM | socialshare-php-container | 9000 (internal) | PHP application server |
+| MySQL | socialshare-db-container | 3307 | Database server |
+| phpMyAdmin | socialshare-phpmyadmin-container | 8081 | Database management |
+| Redis | socialshare-redis-container | 6379 | Cache & session store |
+
+## 🔐 Default Credentials
+
+- **Database**: 
+  - Host: `socialshare-db-service` (from inside containers)
+  - Database: `socialshare`
+  - Username: `socialshare`
+  - Password: `socialshare`
+  - Root Password: `socialshare`
+
+- **phpMyAdmin**:
+  - Username: `socialshare`
+  - Password: `socialshare`
+
+⚠️ **Important**: Change these credentials in production!
+
+## 🧪 Testing
+
+Run the test suite:
+
+```bash
+make test
+```
+
+## 📝 API Endpoints
+
+The application provides REST API endpoints for tracking social shares. See `laravel/routes/api.php` for details.
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## 🙋 Support
+
+If you encounter any issues or have questions:
+
+1. Check the [Troubleshooting](#-troubleshooting) section
+2. Review container logs: `make logs`
+3. Open an issue on GitHub
+
+---
+
+**Happy Sharing! 🚀**
