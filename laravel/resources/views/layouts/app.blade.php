@@ -29,24 +29,154 @@
 
     @stack('scripts')
     
+    <style>
+        /* Sidebar collapsed state styles */
+        #sidebar.sidebar-collapsed {
+            width: 5rem !important; /* w-20 */
+        }
+        
+        #sidebar.sidebar-collapsed .sidebar-text {
+            opacity: 0 !important;
+            width: 0 !important;
+            margin: 0 !important;
+            overflow: hidden;
+            display: none;
+        }
+        
+        #sidebar.sidebar-collapsed .sidebar-link {
+            justify-content: center !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+            gap: 0 !important;
+        }
+        
+        #sidebar.sidebar-collapsed .sidebar-divider,
+        #sidebar.sidebar-collapsed .sidebar-title {
+            opacity: 0 !important;
+            height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden;
+            display: none;
+        }
+        
+        /* Keep active state visible when collapsed - use darker grey color with border */
+        #sidebar.sidebar-collapsed .sidebar-link.active {
+            background-color: hsl(var(--bc) / 0.5) !important; /* darker grey with 50% opacity */
+            color: hsl(var(--bc)) !important; /* base-content for text */
+            border-left: 4px solid hsl(var(--p)) !important; /* primary color border */
+            font-weight: 600 !important; /* semibold */
+        }
+        
+        /* Active state in expanded mode should also be very visible */
+        #sidebar .sidebar-link.active {
+            border-left: 4px solid hsl(var(--p)) !important; /* primary color border */
+        }
+        
+        /* Hover expanded state - override collapsed styles */
+        #sidebar.sidebar-collapsed.sidebar-hover-expanded {
+            width: 16rem !important; /* w-64 */
+        }
+        
+        #sidebar.sidebar-collapsed.sidebar-hover-expanded .sidebar-text {
+            opacity: 1 !important;
+            width: auto !important;
+            margin: 0 !important;
+            display: inline !important;
+        }
+        
+        #sidebar.sidebar-collapsed.sidebar-hover-expanded .sidebar-link {
+            justify-content: flex-start !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+            gap: 0.75rem !important;
+        }
+        
+        #sidebar.sidebar-collapsed.sidebar-hover-expanded .sidebar-divider {
+            opacity: 1 !important;
+            height: auto !important;
+            margin-top: 0.5rem !important;
+            margin-bottom: 0.5rem !important;
+            padding: 0 !important;
+            display: block !important;
+        }
+        
+        #sidebar.sidebar-collapsed.sidebar-hover-expanded .sidebar-divider .divider {
+            opacity: 0.3;
+            display: block !important;
+            margin-top: 0.5rem !important;
+            margin-bottom: 0.5rem !important;
+        }
+        
+        #sidebar.sidebar-collapsed.sidebar-hover-expanded .sidebar-title {
+            opacity: 1 !important;
+            height: auto !important;
+            margin-top: 0.25rem !important;
+            margin-bottom: 0.25rem !important;
+            padding: 0.5rem 1rem !important;
+            display: block !important;
+        }
+    </style>
+    
     <script>
-        // Sidebar Toggle for Mobile
-        const menuToggle = document.getElementById('menu-toggle');
-        const sidebar = document.getElementById('sidebar');
+        // Sidebar Toggle for Mobile and Desktop with Hover Expand
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuToggle = document.getElementById('menu-toggle');
+            const sidebar = document.getElementById('sidebar');
+            let hoverTimeout;
 
-        if (menuToggle && sidebar) {
-            // Handle window resize
-            const handleResize = () => {
+            if (!menuToggle || !sidebar) return;
+            // Get saved collapsed state from localStorage
+            const savedState = localStorage.getItem('sidebar-collapsed');
+            const isCollapsed = savedState === 'true';
+            
+            // Initialize sidebar state on desktop
+            const initializeSidebar = () => {
                 if (window.innerWidth >= 768) {
-                    // Desktop: ensure sidebar is visible
-                    sidebar.classList.remove('hidden', 'fixed', 'left-0', 'top-16', 'z-40');
-                    if (!sidebar.classList.contains('w-64') && !sidebar.classList.contains('w-20')) {
+                    if (isCollapsed) {
+                        sidebar.classList.add('sidebar-collapsed');
+                        sidebar.classList.remove('w-64');
+                        sidebar.classList.add('w-20');
+                    } else {
+                        sidebar.classList.remove('sidebar-collapsed');
+                        sidebar.classList.remove('w-20');
                         sidebar.classList.add('w-64');
                     }
                 }
             };
             
+            // Initialize on page load
+            initializeSidebar();
+            
+            // Handle window resize
+            const handleResize = () => {
+                if (window.innerWidth >= 768) {
+                    // Desktop: ensure sidebar is visible and restore state
+                    sidebar.classList.remove('hidden', 'fixed', 'left-0', 'top-16', 'z-40', 'sidebar-hover-expanded');
+                    initializeSidebar();
+                }
+            };
+            
             window.addEventListener('resize', handleResize);
+            
+            // Hover to expand when collapsed (desktop only)
+            sidebar.addEventListener('mouseenter', () => {
+                if (window.innerWidth >= 768 && sidebar.classList.contains('sidebar-collapsed')) {
+                    clearTimeout(hoverTimeout);
+                    sidebar.classList.add('sidebar-hover-expanded');
+                    sidebar.classList.remove('w-20');
+                    sidebar.classList.add('w-64');
+                }
+            });
+            
+            sidebar.addEventListener('mouseleave', () => {
+                if (window.innerWidth >= 768 && sidebar.classList.contains('sidebar-collapsed')) {
+                    hoverTimeout = setTimeout(() => {
+                        sidebar.classList.remove('sidebar-hover-expanded', 'w-64');
+                        sidebar.classList.add('w-20');
+                    }, 100);
+                }
+            });
             
             menuToggle.addEventListener('click', () => {
                 // On mobile: toggle visibility
@@ -58,13 +188,18 @@
                     sidebar.classList.toggle('z-40');
                     sidebar.classList.toggle('w-64');
                 } else {
-                    // On desktop: toggle width
-                    if (sidebar.classList.contains('w-64')) {
-                        sidebar.classList.remove('w-64');
-                        sidebar.classList.add('w-20');
-                    } else {
-                        sidebar.classList.remove('w-20');
+                    // On desktop: toggle collapsed state
+                    if (sidebar.classList.contains('sidebar-collapsed')) {
+                        // Expand
+                        sidebar.classList.remove('sidebar-collapsed', 'sidebar-hover-expanded', 'w-20');
                         sidebar.classList.add('w-64');
+                        localStorage.setItem('sidebar-collapsed', 'false');
+                    } else {
+                        // Collapse
+                        sidebar.classList.add('sidebar-collapsed');
+                        sidebar.classList.remove('sidebar-hover-expanded', 'w-64');
+                        sidebar.classList.add('w-20');
+                        localStorage.setItem('sidebar-collapsed', 'true');
                     }
                 }
             });
@@ -78,7 +213,7 @@
                     }
                 }
             });
-        }
+        });
 
         // Theme Toggle with DaisyUI - Initialize from saved preference
         document.addEventListener('DOMContentLoaded', () => {
@@ -104,3 +239,4 @@
     </script>
 </body>
 </html>
+
