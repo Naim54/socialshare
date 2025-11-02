@@ -570,14 +570,11 @@ docker-compose -f docker/docker-compose.yml exec -u root socialshare-php-service
    docker-compose -f docker/docker-compose.yml logs socialshare-php-service
    ```
 
-**Important Note:** The seeded articles reference image filenames, but the actual image files are not included in the repository. Images will display correctly once you:
-- Upload images through the admin panel, OR
-- Manually place image files in `laravel/public/images/articles/`
+**Important Note:** The seeded articles include their image files in the repository, so images will display correctly after cloning and setup. Additional images can be:
+- Uploaded through the admin panel, OR
+- Manually placed in `laravel/public/images/articles/`
 
-> **Git Note**: Uploaded images in `public/images/articles/` are intentionally excluded from git (see `.gitignore`). This means:
-> - `git push` will NOT upload image files (this is correct!)
-> - Images are stored directly in `public/images/articles/` - no symlink needed!
-> - Uploaded images are local to each environment and won't be synced via git
+> **Git Note**: Seed images (referenced by the database) in `public/images/articles/` are included in the repository so the application works out of the box. User-uploaded images (with timestamp format) will also be tracked unless explicitly ignored.
 
 ## 📊 Services & Ports
 

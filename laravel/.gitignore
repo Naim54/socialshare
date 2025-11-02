@@ -16,8 +16,6 @@
 /public/build
 /public/hot
 /public/storage
-/public/images/articles/*
-!/public/images/articles/.gitkeep
 /storage/*.key
 /storage/pail
 /vendor
