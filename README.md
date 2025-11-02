@@ -17,16 +17,23 @@ A Laravel-based application for tracking and analyzing social media shares acros
 
 Before you begin, ensure you have the following installed on your system:
 
-- **Docker** (version 20.10 or higher)
-- **Docker Compose** (version 2.0 or higher)
+- **Docker Desktop** (includes Docker and Docker Compose)
 - **Git** (for cloning the repository)
 - **Make** (optional, but recommended for easier command execution)
+
+### Install Docker Desktop
+
+Download and install Docker Desktop for your operating system:
+- **Windows/Mac**: Download from [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/)
+- **Linux**: Follow the [Docker Engine installation guide](https://docs.docker.com/engine/install/)
+
+Docker Desktop includes both Docker and Docker Compose, so you don't need to install them separately.
 
 ### Verify Installation
 
 ```bash
 docker --version
-docker-compose --version
+docker compose version
 git --version
 make --version  # Optional
 ```
@@ -44,19 +51,35 @@ cd socialshare
 
 Create a `.env` file in the `laravel` directory:
 
-```bash
-cp laravel/.env.example laravel/.env
-```
 
-If `.env.example` doesn't exist, create a `.env` file with the following configuration:
+
+### Copy this into .env
 
 ```env
-APP_NAME=SocialShare
+
+
+APP_NAME=Laravel
 APP_ENV=local
-APP_KEY=
+APP_KEY=base64:E9ISCwd69rvoKORv5VxTSGTZIMDuqrBlDmvu9RhE5pw=
 APP_DEBUG=true
-APP_TIMEZONE=UTC
+APP_TIMEZONE=Asia/Kuala_Lumpur
 APP_URL=http://localhost:8080
+
+APP_LOCALE=en
+APP_FALLBACK_LOCALE=en
+APP_FAKER_LOCALE=en_US
+
+APP_MAINTENANCE_DRIVER=file
+# APP_MAINTENANCE_STORE=database
+
+PHP_CLI_SERVER_WORKERS=4
+
+BCRYPT_ROUNDS=12
+
+LOG_CHANNEL=stack
+LOG_STACK=single
+LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=debug
 
 DB_CONNECTION=mysql
 DB_HOST=socialshare-db-service
@@ -65,13 +88,47 @@ DB_DATABASE=socialshare
 DB_USERNAME=socialshare
 DB_PASSWORD=socialshare
 
-REDIS_HOST=socialshare-redis-service
-REDIS_PORT=6379
-REDIS_PASSWORD=null
-
-CACHE_DRIVER=redis
 SESSION_DRIVER=redis
+SESSION_LIFETIME=120
+SESSION_ENCRYPT=false
+SESSION_PATH=/
+SESSION_DOMAIN=null
+SESSION_CONNECTION=default
+SESSION_STORE=redis
+
+BROADCAST_CONNECTION=log
+FILESYSTEM_DISK=local
+QUEUE_CONNECTION=database
+
+
+CACHE_PREFIX=
+
+MEMCACHED_HOST=127.0.0.1
+
+REDIS_CLIENT=predis
+REDIS_HOST=socialshare-redis-service
+REDIS_USERNAME=null
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+REDIS_DB=0
 QUEUE_CONNECTION=redis
+CACHE_PREFIX=
+CACHE_STORE=redis
+REDIS_CACHE_DB=1 
+
+MAIL_MAILER=log
+MAIL_SCHEME=null
+MAIL_HOST=127.0.0.1
+MAIL_PORT=2525
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_FROM_ADDRESS="hello@example.com"
+MAIL_FROM_NAME="${APP_NAME}"
+
+
+
+REDIS_CLUSTER=false
+
 ```
 
 ### 3. Build and Start Containers

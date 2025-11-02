@@ -170,7 +170,7 @@ db-reset:
 	fi
 
 # Setup commands
-setup: build up composer-install npm-install key cache migrate
+setup: build up composer-install npm-install key cache migrate seed
 	@echo "Setup complete! Visit http://localhost:8080"
 
 # Cleanup commands
