@@ -1,5 +1,5 @@
 <!-- Sidebar -->
-<nav id="sidebar" class="w-64 bg-base-200 flex-shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto p-2">
+<nav id="sidebar" class="hidden md:block w-64 bg-base-200 flex-shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto p-2">
     <ul class="menu menu-vertical w-full">
         <li>
             <a href="{{ route('welcome') }}" class="sidebar-link {{ request()->routeIs('welcome') ? 'active bg-base-300' : '' }}">

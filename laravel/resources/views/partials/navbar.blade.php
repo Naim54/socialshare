@@ -1,5 +1,5 @@
 <!-- Header / Navbar -->
-<div class="navbar bg-base-200 h-16 px-4 sticky top-0 z-50 shadow-lg justify-between">
+<div class="navbar bg-base-200 h-14 md:h-16 px-3 sm:px-4 sticky top-0 z-50 shadow-lg justify-between">
     <!-- Left Section: Menu & Logo -->
     <div class="flex items-center space-x-4">
         <button id="menu-toggle" class="btn btn-ghost btn-circle">
@@ -16,7 +16,7 @@
                 <rect x="14" y="14" width="7" height="7"></rect>
                 <rect x="3" y="14" width="7" height="7"></rect>
             </svg>
-            <span class="text-xl font-bold tracking-tight">SocialShare</span>
+            <span class="text-lg sm:text-xl font-bold tracking-tight">SocialShare</span>
         </a>
     </div>
 

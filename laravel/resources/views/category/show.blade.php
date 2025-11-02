@@ -9,27 +9,27 @@
 @section('main-class', 'p-4 md:p-6 lg:p-8 bg-base-100')
 
 @section('content')
-<div class="w-full px-4 md:px-6 lg:px-8">
+<div class="w-full">
     
     <!-- Back Button -->
-    <a href="{{ route('welcome') }}" class="inline-flex items-center gap-2 mb-8 text-base-content/70 hover:text-base-content transition-colors group">
+    <a href="{{ route('welcome') }}" class="inline-flex items-center gap-2 mb-6 md:mb-8 text-base-content/70 hover:text-base-content transition-colors group">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:-translate-x-1 transition-transform">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
         </svg>
-        <span class="font-medium">Back to Home</span>
+        <span class="font-medium text-sm sm:text-base">Back to Home</span>
     </a>
 
     <!-- Category Header -->
-    <div class="mb-8">
-        <div class="flex items-center gap-4 mb-4">
-            <span class="badge badge-{{ \App\Models\Article::getCategoryBadgeColor($category) }} badge-lg font-semibold px-4 py-2">
+    <div class="mb-6 md:mb-8">
+        <div class="flex items-center gap-3 md:gap-4 mb-3 md:mb-4">
+            <span class="badge badge-{{ \App\Models\Article::getCategoryBadgeColor($category) }} badge-md md:badge-lg font-semibold px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm">
                 {{ strtoupper($category) }}
             </span>
         </div>
-        <h1 class="text-4xl md:text-5xl font-bold mb-4 leading-tight tracking-tight">
+        <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4 leading-tight tracking-tight">
             {{ \App\Models\Article::getCategoryDisplayName($category) }} News
         </h1>
-        <p class="text-base-content/70 text-lg">
+        <p class="text-base-content/70 text-sm md:text-base lg:text-lg">
             Latest articles in the {{ \App\Models\Article::getCategoryDisplayName($category) }} category
         </p>
     </div>
@@ -38,7 +38,7 @@
     <div id="article-grid-container">
         @if($articles->count() > 0)
         <div class="mb-8" id="article-grid-section">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
                 @foreach($articles as $article)
                 <a href="{{ route('article.show', $article->slug) }}" class="card bg-base-200 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden border border-base-300 rounded-xl">
                     <figure class="relative overflow-hidden bg-base-300 aspect-video">
@@ -56,17 +56,6 @@
                     </figure>
                     <div class="card-body p-4">
                         <div class="flex items-start gap-3">
-                            <div class="avatar flex-shrink-0">
-                                @if($article->source_logo)
-                                <div class="w-8 h-8 rounded-lg overflow-hidden">
-                                    <img src="{{ $article->source_logo }}" alt="{{ $article->source }}" class="w-full h-full object-cover" />
-                                </div>
-                                @else
-                                <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                                    <span class="text-primary-content text-xs font-bold">{{ strtoupper(substr($article->source ?? 'ST', 0, 2)) }}</span>
-                                </div>
-                                @endif
-                            </div>
                             <div class="flex-1 min-w-0">
                                 <h3 class="text-sm font-semibold line-clamp-2 group-hover:text-primary transition-colors mb-2 leading-tight">
                                     {{ $article->title }}

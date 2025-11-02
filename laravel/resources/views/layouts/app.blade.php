@@ -20,8 +20,8 @@
         @yield('sidebar')
         
         <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto @yield('main-class', 'p-6 bg-base-100') pb-16 md:pb-20">
-            <div class="max-w-[1200px] mx-auto px-6 md:px-8 lg:px-10">
+        <main class="flex-1 overflow-y-auto @yield('main-class', 'p-4 md:p-6 bg-base-100') pb-16 md:pb-20">
+            <div class="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8 lg:px-10">
                 @yield('content')
             </div>
         </main>
@@ -30,18 +30,52 @@
     @stack('scripts')
     
     <script>
-        // Sidebar Toggle
+        // Sidebar Toggle for Mobile
         const menuToggle = document.getElementById('menu-toggle');
         const sidebar = document.getElementById('sidebar');
 
         if (menuToggle && sidebar) {
+            // Handle window resize
+            const handleResize = () => {
+                if (window.innerWidth >= 768) {
+                    // Desktop: ensure sidebar is visible
+                    sidebar.classList.remove('hidden', 'fixed', 'left-0', 'top-16', 'z-40');
+                    if (!sidebar.classList.contains('w-64') && !sidebar.classList.contains('w-20')) {
+                        sidebar.classList.add('w-64');
+                    }
+                }
+            };
+            
+            window.addEventListener('resize', handleResize);
+            
             menuToggle.addEventListener('click', () => {
-                if (sidebar.classList.contains('w-64')) {
-                    sidebar.classList.remove('w-64');
-                    sidebar.classList.add('w-20');
+                // On mobile: toggle visibility
+                if (window.innerWidth < 768) {
+                    sidebar.classList.toggle('hidden');
+                    sidebar.classList.toggle('fixed');
+                    sidebar.classList.toggle('left-0');
+                    sidebar.classList.toggle('top-16');
+                    sidebar.classList.toggle('z-40');
+                    sidebar.classList.toggle('w-64');
                 } else {
-                    sidebar.classList.remove('w-20');
-                    sidebar.classList.add('w-64');
+                    // On desktop: toggle width
+                    if (sidebar.classList.contains('w-64')) {
+                        sidebar.classList.remove('w-64');
+                        sidebar.classList.add('w-20');
+                    } else {
+                        sidebar.classList.remove('w-20');
+                        sidebar.classList.add('w-64');
+                    }
+                }
+            });
+            
+            // Close mobile sidebar when clicking outside
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth < 768) {
+                    if (!sidebar.contains(e.target) && !menuToggle.contains(e.target) && !sidebar.classList.contains('hidden')) {
+                        sidebar.classList.add('hidden');
+                        sidebar.classList.remove('fixed', 'left-0', 'top-16', 'z-40', 'w-64');
+                    }
                 }
             });
         }
