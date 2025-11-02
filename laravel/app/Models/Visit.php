@@ -100,3 +100,4 @@ class Visit extends Model
     }
 }
 
+

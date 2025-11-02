@@ -182,7 +182,7 @@ permissions:
 	@echo "Permissions set successfully!"
 
 # Setup commands
-setup: build up composer-install npm-install key permissions cache migrate seed
+setup: build up composer-install npm-install key permissions cache migrate seed npm-build
 	@echo "Setup complete! Visit http://localhost:8080"
 
 # Cleanup commands
