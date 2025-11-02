@@ -35,8 +35,10 @@ Docker Desktop includes both Docker and Docker Compose, so you don't need to ins
 docker --version
 docker compose version
 git --version
-make --version  # Optional
+make --version  # Optional (only if you want to use Make commands)
 ```
+
+> **Note for Windows Users**: If you don't have WSL (Windows Subsystem for Linux) or Make installed, you can use Docker Compose commands directly. See the [Windows Setup (Without Make/WSL)](#-windows-setup-without-makewsl) section below.
 
 ## 🛠️ Installation & Setup
 
@@ -185,6 +187,91 @@ Once setup is complete, you can access:
   - Username: `socialshare`
   - Password: `socialshare`
   - Server: `socialshare-db-service`
+
+## 🪟 Windows Setup (Without Make/WSL)
+
+If you're on Windows and don't have WSL or Make installed, you can use Docker Compose commands directly. Docker Desktop works perfectly on Windows without WSL.
+
+### Quick Setup (Windows)
+
+Open **PowerShell** or **Command Prompt** in the project directory and run:
+
+```powershell
+# 1. Build and start containers
+docker-compose -f docker/docker-compose.yml build
+docker-compose -f docker/docker-compose.yml up -d
+
+# 2. Wait a few seconds for containers to be ready, then install dependencies
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service composer install --no-scripts
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan package:discover
+
+# 3. Install NPM dependencies
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service npm install
+
+# 4. Generate application key
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan key:generate
+
+# 5. Run migrations and seeders
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan migrate
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan db:seed
+
+# 6. Build frontend assets
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service npm run build
+
+# 7. Cache configuration
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan config:cache
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan route:cache
+```
+
+> **Note**: You can use either `docker-compose` (hyphen) or `docker compose` (space) - both work with Docker Desktop. The commands above use `docker-compose` for consistency with the Makefile.
+
+### Common Commands (Windows - PowerShell/CMD)
+
+Replace `make <command>` with these Docker Compose equivalents:
+
+| Make Command | Windows Equivalent |
+|--------------|-------------------|
+| `make up` | `docker-compose -f docker/docker-compose.yml up -d` |
+| `make down` | `docker-compose -f docker/docker-compose.yml down` |
+| `make logs` | `docker-compose -f docker/docker-compose.yml logs` |
+| `make shell` | `docker-compose -f docker/docker-compose.yml exec socialshare-php-service bash` |
+| `make migrate` | `docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan migrate` |
+| `make seed` | `docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan db:seed` |
+| `make npm-build` | `docker-compose -f docker/docker-compose.yml exec socialshare-php-service npm run build` |
+| `make cache` | `docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan config:cache` |
+
+### PowerShell Script (Optional)
+
+You can create a PowerShell script (`setup.ps1`) to automate the setup:
+
+```powershell
+# setup.ps1
+Write-Host "Building containers..."
+docker-compose -f docker/docker-compose.yml build
+
+Write-Host "Starting containers..."
+docker-compose -f docker/docker-compose.yml up -d
+
+Write-Host "Waiting for containers to be ready..."
+Start-Sleep -Seconds 10
+
+Write-Host "Installing dependencies..."
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service composer install --no-scripts
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan package:discover
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service npm install
+
+Write-Host "Setting up application..."
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan key:generate
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan migrate
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan db:seed
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service npm run build
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan config:cache
+docker-compose -f docker/docker-compose.yml exec socialshare-php-service php artisan route:cache
+
+Write-Host "Setup complete! Visit http://localhost:8080"
+```
+
+Run it with: `.\setup.ps1` (you may need to run `Set-ExecutionPolicy RemoteSigned` first if you get a permission error)
 
 ## 📁 Project Structure
 
