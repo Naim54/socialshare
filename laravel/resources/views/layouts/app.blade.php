@@ -48,9 +48,50 @@
                 transition: transform 0.3s ease-in-out !important;
             }
             
-            /* When sidebar is visible on mobile (not hidden) */
+            /* When sidebar is visible on mobile - ensure it's fully expanded */
             #sidebar.mobile-open {
                 transform: translateX(0) !important;
+                width: 85% !important;
+                max-width: 320px !important;
+            }
+            
+            /* Override collapsed styles on mobile when open - show all text and content */
+            #sidebar.mobile-open.sidebar-collapsed,
+            #sidebar.mobile-open {
+                width: 85% !important;
+                max-width: 320px !important;
+            }
+            
+            #sidebar.mobile-open .sidebar-text {
+                opacity: 1 !important;
+                width: auto !important;
+                margin: 0 !important;
+                display: inline !important;
+                overflow: visible !important;
+            }
+            
+            #sidebar.mobile-open .sidebar-link {
+                justify-content: flex-start !important;
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+                gap: 0.75rem !important;
+            }
+            
+            #sidebar.mobile-open .sidebar-divider,
+            #sidebar.mobile-open .sidebar-title {
+                opacity: 1 !important;
+                height: auto !important;
+                margin: 0 !important;
+                padding: 0.5rem 1rem !important;
+                display: block !important;
+                overflow: visible !important;
+            }
+            
+            #sidebar.mobile-open .sidebar-divider .divider {
+                opacity: 0.3 !important;
+                display: block !important;
+                margin-top: 0.5rem !important;
+                margin-bottom: 0.5rem !important;
             }
             
             /* Ensure sidebar is always in document flow on mobile (not display:none) */
@@ -191,9 +232,10 @@
             
             // Initialize on page load
             if (window.innerWidth < 768) {
-                // Mobile: ensure sidebar starts hidden
+                // Mobile: ensure sidebar starts hidden and remove any collapsed classes
                 sidebar.classList.add('hidden');
-                sidebar.classList.remove('mobile-open');
+                sidebar.classList.remove('mobile-open', 'sidebar-collapsed', 'sidebar-hover-expanded', 'w-20');
+                sidebar.classList.add('w-64');
                 if (overlay) overlay.classList.add('hidden');
             } else {
                 initializeSidebar();
@@ -207,7 +249,8 @@
                     if (overlay) overlay.classList.add('hidden');
                     initializeSidebar();
                 } else {
-                    // Mobile: ensure sidebar is hidden by default
+                    // Mobile: ensure sidebar is hidden by default and remove collapsed classes
+                    sidebar.classList.remove('sidebar-collapsed', 'sidebar-hover-expanded', 'w-20');
                     if (sidebar.classList.contains('mobile-open')) {
                         sidebar.classList.remove('mobile-open');
                         sidebar.classList.add('hidden');
@@ -247,9 +290,9 @@
                         sidebar.classList.add('hidden');
                         if (overlay) overlay.classList.add('hidden');
                     } else {
-                        // Show sidebar
-                        sidebar.classList.remove('hidden');
-                        sidebar.classList.add('mobile-open');
+                        // Show sidebar - ensure it's fully expanded on mobile
+                        sidebar.classList.remove('hidden', 'sidebar-collapsed', 'sidebar-hover-expanded', 'w-20');
+                        sidebar.classList.add('mobile-open', 'w-64');
                         if (overlay) overlay.classList.remove('hidden');
                     }
                 } else {
@@ -315,4 +358,5 @@
     </script>
 </body>
 </html>
+
 
