@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+ @extends('layouts.admin')
 
 @section('title', 'Dashboard - SocialShare')
 
@@ -19,7 +19,7 @@
             <button id="theme-toggle" class="p-2 text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100 theme-transition">
                 <i id="theme-icon" class="fas fa-moon text-xl"></i>
             </button>
-            <div class="flex items-center space-x-3">
+            <div class="hidden lg:flex items-center space-x-3">
                 <div class="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
                     <span class="text-white text-sm font-medium">{{ substr(Auth::guard('admin')->user()->name, 0, 1) }}</span>
                 </div>
@@ -149,9 +149,14 @@
             <div class="lg:col-span-2 card bg-white dark:bg-dark-800 shadow-lg rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300">
                 <div class="card-body p-6">
                     <div class="flex items-center justify-between mb-6">
-                        <div>
-                            <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-1">Shares Trend</h3>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">Last 30 Days</p>
+                        <div class="flex items-center gap-3">
+                            <div>
+                                <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-1">Shares Trend</h3>
+                            </div>
+                            <select id="sharesTrendRange" class="select select-bordered select-sm text-xs bg-white dark:bg-dark-700 border-gray-300 dark:border-dark-600 text-gray-700 dark:text-gray-300 focus:border-blue-500 dark:focus:border-blue-400">
+                                <option value="7" {{ ($dateRange ?? '7') == '7' ? 'selected' : '' }}>Last 7 Days</option>
+                                <option value="30" {{ ($dateRange ?? '7') == '30' ? 'selected' : '' }}>Last 30 Days</option>
+                            </select>
                         </div>
                         <div class="dropdown dropdown-end">
                             <button class="btn btn-ghost btn-sm btn-circle" tabindex="0">
@@ -177,11 +182,11 @@
                     <div class="flex items-center gap-6 mb-4">
                         <div>
                             <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Shares</p>
-                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ number_format($sharesTrendData['total_shares']) }}</p>
+                            <p id="sharesTrendTotal" class="text-2xl font-bold text-gray-900 dark:text-white">{{ number_format($sharesTrendData['total_shares']) }}</p>
                         </div>
                         <div>
                             <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Avg Daily</p>
-                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ number_format($sharesTrendData['avg_daily']) }}</p>
+                            <p id="sharesTrendAvg" class="text-2xl font-bold text-gray-900 dark:text-white">{{ number_format($sharesTrendData['avg_daily']) }}</p>
                         </div>
                     </div>
                     
@@ -199,7 +204,15 @@
                             <div class="w-11 h-11 rounded-lg bg-teal-500/10 dark:bg-teal-500/20 text-teal-500 dark:text-teal-400 flex items-center justify-center">
                                 <i class="fas fa-share-alt text-lg"></i>
                             </div>
-                            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Shares</h3>
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <h3 class="text-base font-semibold text-gray-900 dark:text-white">Shares</h3>
+                                    <select id="sharesPlatformRange" class="select select-bordered select-sm text-[10px] bg-white dark:bg-dark-700 border-gray-300 dark:border-dark-600 text-gray-700 dark:text-gray-300 focus:border-purple-500 dark:focus:border-purple-400">
+                                        <option value="7" {{ ($dateRange ?? '7') == '7' ? 'selected' : '' }}>Last 7 Days</option>
+                                        <option value="30" {{ ($dateRange ?? '7') == '30' ? 'selected' : '' }}>Last 30 Days</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                         <div class="dropdown dropdown-end">
                             <button class="btn btn-ghost btn-sm btn-circle" tabindex="0">
@@ -223,7 +236,7 @@
                     </div>
                     
                     <div class="mb-4">
-                        <p class="text-4xl font-bold text-gray-900 dark:text-white mb-4 text-center">{{ number_format($metrics['total_shares']['value']) }}</p>
+                        <p id="sharesPlatformTotal" class="text-4xl font-bold text-gray-900 dark:text-white mb-4 text-center">{{ number_format($metrics['total_shares']['value']) }}</p>
                     </div>
                     
                     <!-- Donut Chart - Centered and Bigger -->
@@ -234,7 +247,7 @@
                     </div>
                     
                     <!-- Platform Legend -->
-                    <div class="grid grid-cols-2 gap-x-4 gap-y-2.5 pt-4 border-t border-gray-100 dark:border-gray-700">
+                    <div id="sharesPlatformLegend" class="grid grid-cols-2 gap-x-4 gap-y-2.5 pt-4 border-t border-gray-100 dark:border-gray-700">
                         @foreach($sharesByPlatform['labels'] as $index => $label)
                             <div class="flex items-center gap-2">
                                 <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: {{ $sharesByPlatform['colors'][$index] }}"></div>
@@ -251,8 +264,16 @@
             <!-- Top Categories Shared List -->
             <div class="card bg-white dark:bg-dark-800 shadow-lg rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300">
                 <div class="card-body p-6">
-                <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-base font-semibold text-gray-900 dark:text-white">Top Categories</h3>
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <div>
+                                <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-1">Top Categories</h3>
+                            </div>
+                            <select id="topCategoriesRange" class="select select-bordered select-sm text-xs bg-white dark:bg-dark-700 border-gray-300 dark:border-dark-600 text-gray-700 dark:text-gray-300 focus:border-purple-500 dark:focus:border-purple-400">
+                                <option value="7" {{ ($dateRange ?? '7') == '7' ? 'selected' : '' }}>Last 7 Days</option>
+                                <option value="30" {{ ($dateRange ?? '7') == '30' ? 'selected' : '' }}>Last 30 Days</option>
+                            </select>
+                        </div>
                         <div class="dropdown dropdown-end">
                             <button class="btn btn-ghost btn-sm btn-circle" tabindex="0">
                                 <i class="fas fa-ellipsis-v text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100"></i>
@@ -268,7 +289,7 @@
                         </div>
                     </div>
                     
-                    <div class="space-y-3">
+                    <div id="topCategoriesList" class="space-y-3">
                         @foreach($topCategoriesShared as $category)
                             <div class="flex items-center gap-4 py-2">
                                 <!-- Icon -->
@@ -300,7 +321,15 @@
                             <div class="w-11 h-11 rounded-lg bg-teal-500/10 dark:bg-teal-500/20 text-teal-500 dark:text-teal-400 flex items-center justify-center">
                                 <i class="fas fa-users text-lg"></i>
                             </div>
-                            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Visitors</h3>
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <h3 class="text-base font-semibold text-gray-900 dark:text-white">Visitors</h3>
+                                    <select id="visitorsRange" class="select select-bordered select-sm text-[10px] bg-white dark:bg-dark-700 border-gray-300 dark:border-dark-600 text-gray-700 dark:text-gray-300 focus:border-green-500 dark:focus:border-green-400">
+                                        <option value="7" {{ ($dateRange ?? '7') == '7' ? 'selected' : '' }}>Last 7 Days</option>
+                                        <option value="30" {{ ($dateRange ?? '7') == '30' ? 'selected' : '' }}>Last 30 Days</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                         <div class="dropdown dropdown-end">
                             <button class="btn btn-ghost btn-sm btn-circle" tabindex="0">
@@ -324,7 +353,7 @@
                     </div>
                     
                     <div class="mb-4 flex-1 flex items-center">
-                        <p class="text-4xl font-bold text-gray-900 dark:text-white">{{ number_format($metrics['unique_visitors']['value']) }}</p>
+                        <p id="visitorsTotal" class="text-4xl font-bold text-gray-900 dark:text-white">{{ number_format($metrics['unique_visitors']['value']) }}</p>
                     </div>
                     
                     <div class="mt-auto">
@@ -339,7 +368,15 @@
             <div class="card bg-white dark:bg-dark-800 shadow-lg rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300">
                 <div class="card-body p-6">
                     <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-base font-semibold text-gray-900 dark:text-white">Device Types</h3>
+                        <div class="flex items-center gap-3">
+                            <div>
+                                <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-1">Device Types</h3>
+                            </div>
+                            <select id="deviceTypesRange" class="select select-bordered select-sm text-xs bg-white dark:bg-dark-700 border-gray-300 dark:border-dark-600 text-gray-700 dark:text-gray-300 focus:border-purple-500 dark:focus:border-purple-400">
+                                <option value="7" {{ ($dateRange ?? '7') == '7' ? 'selected' : '' }}>Last 7 Days</option>
+                                <option value="30" {{ ($dateRange ?? '7') == '30' ? 'selected' : '' }}>Last 30 Days</option>
+                            </select>
+                        </div>
                         <div class="dropdown dropdown-end">
                             <button class="btn btn-ghost btn-sm btn-circle" tabindex="0">
                                 <i class="fas fa-ellipsis-v text-gray-400 dark:text-gray-300 hover:text-gray-600 dark:hover:text-gray-100"></i>
@@ -355,7 +392,7 @@
                         </div>
                     </div>
                     
-                    <div class="space-y-3">
+                    <div id="deviceTypesList" class="space-y-3">
                         @foreach($deviceTypes as $device)
                             <div class="flex items-center gap-4 py-2">
                                 <!-- Icon -->
@@ -512,11 +549,16 @@
                         },
                         ticks: {
                             color: textColor,
+                            stepSize: 1,
                             callback: function(value) {
-                                return value.toLocaleString();
+                                // Only show whole numbers (no decimals)
+                                if (Number.isInteger(value)) {
+                                    return value.toLocaleString();
+                                }
+                                return '';
                             }
-                            }
-                        },
+                        }
+                    },
                     x: {
                         grid: {
                             display: false
@@ -707,6 +749,269 @@
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    }
+
+    // Date Range Selection Handler - Independent for each chart
+    const loadingStates = {};
+
+    // Update Shares Trend Chart
+    async function updateSharesTrend(range) {
+        if (loadingStates.sharesTrend) return;
+        loadingStates.sharesTrend = true;
+
+        try {
+            const response = await fetch(`{{ route('admin.chart-data') }}?range=${range}`);
+            const result = await response.json();
+
+            if (result.success && result.data.sharesTrend) {
+                const data = result.data.sharesTrend;
+                if (chartInstances.sharesTrendChart) {
+                    chartInstances.sharesTrendChart.data.labels = data.labels;
+                    chartInstances.sharesTrendChart.data.datasets[0].data = data.values;
+                    chartInstances.sharesTrendChart.update();
+                }
+                document.getElementById('sharesTrendTotal').textContent = data.total_shares.toLocaleString();
+                document.getElementById('sharesTrendAvg').textContent = data.avg_daily.toLocaleString();
+            }
+        } catch (error) {
+            console.error('Error updating shares trend:', error);
+        } finally {
+            loadingStates.sharesTrend = false;
+        }
+    }
+
+    // Update Shares by Platform Chart
+    async function updateSharesPlatform(range) {
+        if (loadingStates.sharesPlatform) return;
+        loadingStates.sharesPlatform = true;
+
+        try {
+            const response = await fetch(`{{ route('admin.chart-data') }}?range=${range}`);
+            const result = await response.json();
+
+            if (result.success && result.data.sharesByPlatform) {
+                const data = result.data;
+                if (chartInstances.dailySharesChart) {
+                    chartInstances.dailySharesChart.data.labels = data.sharesByPlatform.labels;
+                    chartInstances.dailySharesChart.data.datasets[0].data = data.sharesByPlatform.values;
+                    chartInstances.dailySharesChart.data.datasets[0].backgroundColor = data.sharesByPlatform.colors;
+                    chartInstances.dailySharesChart.update();
+                }
+                document.getElementById('sharesPlatformTotal').textContent = data.metrics.total_shares.toLocaleString();
+                
+                const legendContainer = document.getElementById('sharesPlatformLegend');
+                if (legendContainer && data.sharesByPlatform.labels.length > 0) {
+                    legendContainer.innerHTML = data.sharesByPlatform.labels.map((label, index) => `
+                        <div class="flex items-center gap-2">
+                            <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: ${data.sharesByPlatform.colors[index]}"></div>
+                            <span class="text-xs font-medium text-gray-600 dark:text-gray-400 truncate">${label}</span>
+                        </div>
+                    `).join('');
+                }
+            }
+        } catch (error) {
+            console.error('Error updating shares platform:', error);
+        } finally {
+            loadingStates.sharesPlatform = false;
+        }
+    }
+
+    // Update Top Categories
+    async function updateTopCategories(range) {
+        if (loadingStates.topCategories) return;
+        loadingStates.topCategories = true;
+
+        try {
+            const response = await fetch(`{{ route('admin.chart-data') }}?range=${range}`);
+            const result = await response.json();
+
+            if (result.success && result.data.topCategories) {
+                const data = result.data.topCategories;
+                const topCategoriesList = document.getElementById('topCategoriesList');
+                
+                if (topCategoriesList) {
+                    if (data.length === 0) {
+                        topCategoriesList.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No data available</p>';
+                    } else {
+                        const categoryColors = {
+                            'tech': 'bg-blue-500',
+                            'politics': 'bg-red-500',
+                            'business': 'bg-green-500',
+                            'sports': 'bg-orange-500',
+                            'health': 'bg-purple-500',
+                            'economy': 'bg-yellow-500',
+                            'nation': 'bg-indigo-500',
+                            'world': 'bg-cyan-500',
+                        };
+                        
+                        topCategoriesList.innerHTML = data.map(category => `
+                            <div class="flex items-center gap-4 py-2">
+                                <div class="w-12 h-12 rounded-lg ${category.color} flex items-center justify-center flex-shrink-0">
+                                    <i class="fas ${category.icon} text-white text-lg"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white">${category.name}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">${category.description}</p>
+                                </div>
+                                <div class="text-right flex-shrink-0">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white">${category.shares.toLocaleString()}</p>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error updating top categories:', error);
+        } finally {
+            loadingStates.topCategories = false;
+        }
+    }
+
+    // Update Visitors Chart
+    async function updateVisitors(range) {
+        if (loadingStates.visitors) return;
+        loadingStates.visitors = true;
+
+        try {
+            const response = await fetch(`{{ route('admin.chart-data') }}?range=${range}`);
+            const result = await response.json();
+
+            if (result.success && result.data.dailyVisitors && result.data.metrics) {
+                const data = result.data;
+                if (chartInstances.dailyVisitorsChart) {
+                    // Pre-calculate colors array for proper update
+                    const dayColors = [
+                        'rgba(59, 130, 246, 1)',   // Blue - Sunday
+                        'rgba(34, 197, 94, 1)',    // Green - Monday
+                        'rgba(249, 115, 22, 1)',   // Orange - Tuesday
+                        'rgba(168, 85, 247, 1)',   // Purple - Wednesday
+                        'rgba(239, 68, 68, 1)',    // Red - Thursday
+                        'rgba(20, 184, 166, 1)',   // Teal - Friday
+                        'rgba(236, 72, 153, 1)'    // Pink - Saturday
+                    ];
+                    
+                    // Update chart data - replace entire dataset for proper refresh
+                    chartInstances.dailyVisitorsChart.data.labels = data.dailyVisitors.labels;
+                    chartInstances.dailyVisitorsChart.data.datasets[0].data = data.dailyVisitors.values;
+                    // Update backgroundColor as array instead of function for proper refresh
+                    chartInstances.dailyVisitorsChart.data.datasets[0].backgroundColor = data.dailyVisitors.values.map((_, index) => 
+                        dayColors[index % dayColors.length]
+                    );
+                    // Force update with animation
+                    chartInstances.dailyVisitorsChart.update();
+                }
+                // Update total visitors count
+                const visitorsTotalEl = document.getElementById('visitorsTotal');
+                if (visitorsTotalEl) {
+                    visitorsTotalEl.textContent = data.metrics.unique_visitors.toLocaleString();
+                }
+            } else {
+                console.error('Invalid response structure:', result);
+            }
+        } catch (error) {
+            console.error('Error updating visitors:', error);
+        } finally {
+            loadingStates.visitors = false;
+        }
+    }
+
+    // Update Device Types
+    async function updateDeviceTypes(range) {
+        if (loadingStates.deviceTypes) return;
+        loadingStates.deviceTypes = true;
+
+        try {
+            const response = await fetch(`{{ route('admin.chart-data') }}?range=${range}`);
+            const result = await response.json();
+
+            if (result.success && result.data.deviceTypes) {
+                const data = result.data.deviceTypes;
+                const deviceTypesList = document.getElementById('deviceTypesList');
+                
+                if (deviceTypesList) {
+                    if (data.length === 0) {
+                        deviceTypesList.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No data available</p>';
+                    } else {
+                        deviceTypesList.innerHTML = data.map(device => `
+                            <div class="flex items-center gap-4 py-2">
+                                <div class="w-12 h-12 rounded-lg ${device.color} flex items-center justify-center flex-shrink-0">
+                                    <i class="fas ${device.icon} text-white text-lg"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white">${device.name}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">${device.description}</p>
+                                </div>
+                                <div class="text-right flex-shrink-0">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white">${device.count.toLocaleString()}</p>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                } else {
+                    console.error('Device types list element not found');
+                }
+            } else {
+                console.error('Invalid response structure:', result);
+            }
+        } catch (error) {
+            console.error('Error updating device types:', error);
+        } finally {
+            loadingStates.deviceTypes = false;
+        }
+    }
+
+    // Add event listeners to date range selectors - each independent
+    function attachEventListeners() {
+        // Shares Trend
+        const sharesTrendRange = document.getElementById('sharesTrendRange');
+        if (sharesTrendRange) {
+            sharesTrendRange.addEventListener('change', function() {
+                updateSharesTrend(this.value);
+            });
+        }
+
+        // Shares Platform
+        const sharesPlatformRange = document.getElementById('sharesPlatformRange');
+        if (sharesPlatformRange) {
+            sharesPlatformRange.addEventListener('change', function() {
+                updateSharesPlatform(this.value);
+            });
+        }
+
+        // Top Categories
+        const topCategoriesRange = document.getElementById('topCategoriesRange');
+        if (topCategoriesRange) {
+            topCategoriesRange.addEventListener('change', function() {
+                updateTopCategories(this.value);
+            });
+        }
+
+        // Visitors
+        const visitorsRange = document.getElementById('visitorsRange');
+        if (visitorsRange) {
+            visitorsRange.addEventListener('change', function(e) {
+                const range = e.target.value;
+                updateVisitors(range);
+            });
+        }
+
+        // Device Types
+        const deviceTypesRange = document.getElementById('deviceTypesRange');
+        if (deviceTypesRange) {
+            deviceTypesRange.addEventListener('change', function(e) {
+                const range = e.target.value;
+                updateDeviceTypes(range);
+            });
+        }
+    }
+
+    // Attach listeners when DOM is ready or immediately if already loaded
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', attachEventListeners);
+    } else {
+        // DOM is already loaded
+        attachEventListeners();
     }
 
 </script>

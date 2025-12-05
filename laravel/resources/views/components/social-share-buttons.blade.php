@@ -121,23 +121,25 @@ document.addEventListener('DOMContentLoaded', function() {
             switch(platform) {
                 case 'facebook':
                     shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+                    window.open(shareUrl, '_blank', 'width=600,height=400');
                     break;
                 case 'twitter':
                     shareUrl = `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedText}`;
+                    window.open(shareUrl, '_blank', 'width=600,height=400');
                     break;
                 case 'whatsapp':
                     shareUrl = `https://wa.me/?text=${encodedText}%20${encodedUrl}`;
+                    window.open(shareUrl, '_blank');
                     break;
                 case 'telegram':
                     shareUrl = `https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`;
+                    window.open(shareUrl, '_blank', 'width=600,height=400');
                     break;
                 case 'email':
+                    // Use location.href for mailto links as window.open doesn't work reliably with mailto
                     shareUrl = `mailto:?subject=${encodedTitle}&body=${encodedText}%20${encodedUrl}`;
+                    window.location.href = shareUrl;
                     break;
-            }
-
-            if (shareUrl) {
-                window.open(shareUrl, '_blank', 'width=600,height=400');
             }
         });
     });

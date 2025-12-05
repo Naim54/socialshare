@@ -1,5 +1,5 @@
 <!-- Sidebar -->
-<nav id="sidebar" class="hidden md:block w-64 bg-base-200 flex-shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto transition-all duration-300 ease-in-out">
+<nav id="sidebar" class="hidden md:block w-64 bg-base-200 flex-shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto transition-all duration-300 ease-in-out md:translate-x-0">
     <div class="p-4">
         <ul class="menu menu-vertical w-full space-y-1">
             <li>

@@ -51,11 +51,11 @@ cd socialshare
 
 Create a `.env` file in the `laravel` directory and copy all content from the `envtocopy` file:
 
-```bash
+
 
 
 Copy-Item envtocopy into laravel\.env
-```
+
 
 > **Note**: The `envtocopy` file contains all the necessary environment variables pre-configured for Docker.
 

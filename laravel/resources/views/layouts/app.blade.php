@@ -14,13 +14,16 @@
 
     @include('partials.navbar')
 
+    <!-- Mobile Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 md:hidden hidden transition-opacity duration-300"></div>
+
     <!-- Main Content Area -->
     <div class="flex flex-1 @yield('content-wrapper-class', 'overflow-hidden')">
         
         @yield('sidebar')
         
         <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto @yield('main-class', 'p-4 md:p-6 bg-base-100') pb-16 md:pb-20">
+        <main class="flex-1 overflow-y-auto @yield('main-class', 'p-4 md:p-6 bg-base-100') pb-16 md:pb-20 w-full md:w-auto">
             <div class="max-w-[1200px] mx-auto w-full px-4 sm:px-6 md:px-8 lg:px-10">
                 @yield('content')
             </div>
@@ -30,6 +33,46 @@
     @stack('scripts')
     
     <style>
+        /* Mobile sidebar styles - ensure it overlays and doesn't affect content */
+        @media (max-width: 767px) {
+            /* Sidebar should be completely removed from document flow on mobile */
+            #sidebar {
+                position: fixed !important;
+                top: 4rem !important; /* Below navbar */
+                left: 0 !important;
+                z-index: 40 !important;
+                width: 85% !important;
+                max-width: 320px !important;
+                height: calc(100vh - 4rem) !important;
+                transform: translateX(-100%) !important; /* Hidden by default */
+                transition: transform 0.3s ease-in-out !important;
+            }
+            
+            /* When sidebar is visible on mobile (not hidden) */
+            #sidebar.mobile-open {
+                transform: translateX(0) !important;
+            }
+            
+            /* Ensure sidebar is always in document flow on mobile (not display:none) */
+            #sidebar.hidden {
+                display: block !important;
+                transform: translateX(-100%) !important;
+            }
+            
+            /* Ensure main content always takes full width on mobile */
+            main {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin-left: 0 !important;
+                flex: 1 1 100% !important;
+            }
+            
+            /* Content wrapper should not be affected by sidebar on mobile */
+            .flex.flex-1 {
+                width: 100% !important;
+            }
+        }
+        
         /* Sidebar collapsed state styles */
         #sidebar.sidebar-collapsed {
             width: 5rem !important; /* w-20 */
@@ -123,6 +166,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const menuToggle = document.getElementById('menu-toggle');
             const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
             let hoverTimeout;
 
             if (!menuToggle || !sidebar) return;
@@ -146,14 +190,29 @@
             };
             
             // Initialize on page load
-            initializeSidebar();
+            if (window.innerWidth < 768) {
+                // Mobile: ensure sidebar starts hidden
+                sidebar.classList.add('hidden');
+                sidebar.classList.remove('mobile-open');
+                if (overlay) overlay.classList.add('hidden');
+            } else {
+                initializeSidebar();
+            }
             
             // Handle window resize
             const handleResize = () => {
                 if (window.innerWidth >= 768) {
                     // Desktop: ensure sidebar is visible and restore state
-                    sidebar.classList.remove('hidden', 'fixed', 'left-0', 'top-16', 'z-40', 'sidebar-hover-expanded');
+                    sidebar.classList.remove('hidden', 'mobile-open', 'sidebar-hover-expanded');
+                    if (overlay) overlay.classList.add('hidden');
                     initializeSidebar();
+                } else {
+                    // Mobile: ensure sidebar is hidden by default
+                    if (sidebar.classList.contains('mobile-open')) {
+                        sidebar.classList.remove('mobile-open');
+                        sidebar.classList.add('hidden');
+                        if (overlay) overlay.classList.add('hidden');
+                    }
                 }
             };
             
@@ -181,12 +240,18 @@
             menuToggle.addEventListener('click', () => {
                 // On mobile: toggle visibility
                 if (window.innerWidth < 768) {
-                    sidebar.classList.toggle('hidden');
-                    sidebar.classList.toggle('fixed');
-                    sidebar.classList.toggle('left-0');
-                    sidebar.classList.toggle('top-16');
-                    sidebar.classList.toggle('z-40');
-                    sidebar.classList.toggle('w-64');
+                    const isOpen = sidebar.classList.contains('mobile-open');
+                    if (isOpen) {
+                        // Hide sidebar
+                        sidebar.classList.remove('mobile-open');
+                        sidebar.classList.add('hidden');
+                        if (overlay) overlay.classList.add('hidden');
+                    } else {
+                        // Show sidebar
+                        sidebar.classList.remove('hidden');
+                        sidebar.classList.add('mobile-open');
+                        if (overlay) overlay.classList.remove('hidden');
+                    }
                 } else {
                     // On desktop: toggle collapsed state
                     if (sidebar.classList.contains('sidebar-collapsed')) {
@@ -204,12 +269,23 @@
                 }
             });
             
-            // Close mobile sidebar when clicking outside
+            // Close mobile sidebar when clicking outside or on overlay
+            if (overlay) {
+                overlay.addEventListener('click', () => {
+                    if (window.innerWidth < 768) {
+                        sidebar.classList.remove('mobile-open');
+                        sidebar.classList.add('hidden');
+                        overlay.classList.add('hidden');
+                    }
+                });
+            }
+            
             document.addEventListener('click', (e) => {
                 if (window.innerWidth < 768) {
-                    if (!sidebar.contains(e.target) && !menuToggle.contains(e.target) && !sidebar.classList.contains('hidden')) {
+                    if (!sidebar.contains(e.target) && !menuToggle.contains(e.target) && sidebar.classList.contains('mobile-open')) {
+                        sidebar.classList.remove('mobile-open');
                         sidebar.classList.add('hidden');
-                        sidebar.classList.remove('fixed', 'left-0', 'top-16', 'z-40', 'w-64');
+                        if (overlay) overlay.classList.add('hidden');
                     }
                 }
             });

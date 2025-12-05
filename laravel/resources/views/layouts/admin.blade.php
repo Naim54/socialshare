@@ -108,33 +108,62 @@
     </style>
     @stack('styles')
 </head>
-<body class="font-inter bg-gray-50 dark:bg-dark-900 min-h-screen theme-transition flex flex-col">
+<body class="font-inter bg-gray-50 dark:bg-dark-900 h-screen theme-transition flex flex-col overflow-hidden">
     <div class="flex flex-1 overflow-hidden">
         <!-- Sidebar -->
-        <aside id="sidebar" class="w-64 bg-white dark:bg-dark-800 shadow-lg sidebar-transition theme-transition flex-shrink-0">
+        <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-dark-800 shadow-lg sidebar-transition theme-transition flex-shrink-0 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
             <div class="p-4 sm:p-6 h-full flex flex-col">
                 <!-- Header with Logo -->
-                <div class="flex items-center space-x-3 mb-6">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600 dark:text-indigo-400 flex-shrink-0">
-                        <rect x="3" y="3" width="7" height="7"></rect>
-                        <rect x="14" y="3" width="7" height="7"></rect>
-                        <rect x="14" y="14" width="7" height="7"></rect>
-                        <rect x="3" y="14" width="7" height="7"></rect>
-                    </svg>
-                    <span class="sidebar-text text-xl font-bold text-gray-900 dark:text-white theme-transition tracking-tight">SocialShare</span>
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600 dark:text-indigo-400 flex-shrink-0">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                        <span class="sidebar-text text-xl font-bold text-gray-900 dark:text-white theme-transition tracking-tight">SocialShare</span>
+                    </div>
+                    <!-- Close button for mobile -->
+                    <button id="sidebar-close" class="lg:hidden p-2 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
                 </div>
                 
                 <!-- Navigation Menu -->
                 <nav class="space-y-2 flex-1 overflow-y-auto">
                     @yield('sidebar-nav')
                 </nav>
+
+                <!-- Mobile User Menu -->
+                <div class="mt-auto lg:hidden border-t border-gray-200 dark:border-dark-700 p-4">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span class="text-white text-sm font-medium">{{ substr(Auth::guard('admin')->user()->name, 0, 1) }}</span>
+                        </div>
+                        <div class="overflow-hidden">
+                            <p class="font-medium text-gray-900 dark:text-white truncate">{{ Auth::guard('admin')->user()->name }}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ Auth::guard('admin')->user()->email }}</p>
+                        </div>
+                    </div>
+                    <form method="POST" action="{{ route('admin.logout') }}">
+                        @csrf
+                        <button type="submit" class="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg transition-colors">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </button>
+                    </form>
+                </div>
             </div>
         </aside>
 
+        <!-- Mobile Overlay -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 lg:hidden hidden"></div>
+
         <!-- Main Content Area -->
-        <div class="flex-1 flex flex-col overflow-hidden">
+        <div class="flex-1 flex flex-col overflow-y-auto lg:ml-0">
             <!-- Top Navigation -->
-            <header class="bg-white dark:bg-dark-800 shadow-sm border-b border-gray-200 dark:border-dark-700 theme-transition flex-shrink-0">
+            <header class="sticky top-0 z-50 bg-white dark:bg-dark-800 shadow-sm border-b border-gray-200 dark:border-dark-700 theme-transition flex-shrink-0">
                 <div class="flex items-center px-6 py-4 gap-4">
                     <button id="sidebar-toggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-700 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-all flex-shrink-0" aria-label="Toggle sidebar">
                         <i class="fas fa-angle-left text-lg"></i>
@@ -146,7 +175,7 @@
             </header>
 
             <!-- Dashboard Content -->
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-dark-900 theme-transition">
+            <main class="flex-1 overflow-x-hidden bg-gray-50 dark:bg-dark-900 theme-transition">
                 @yield('content')
             </main>
 
@@ -183,26 +212,43 @@
             const savedState = localStorage.getItem('sidebar-collapsed');
             const isCollapsed = savedState === 'true';
             
-            // Initialize sidebar state
-            if (isCollapsed) {
-                collapseSidebar(false);
-            }
+            // Initialize sidebar state will be handled in resize handler
             
+            // Toggle sidebar on button click
             // Toggle sidebar on button click
             sidebarToggle.addEventListener('click', function(e) {
                 e.stopPropagation();
-                const isCurrentlyCollapsed = sidebar.classList.contains('sidebar-collapsed');
+                const isMobile = window.innerWidth < 1024;
                 
-                if (isCurrentlyCollapsed) {
-                    expandSidebar(true);
+                if (isMobile) {
+                    const isHidden = sidebar.classList.contains('-translate-x-full');
+                    if (isHidden) {
+                        expandSidebar(true);
+                    } else {
+                        collapseSidebar(true);
+                    }
                 } else {
-                    collapseSidebar(true);
+                    const isCurrentlyCollapsed = sidebar.classList.contains('sidebar-collapsed');
+                    if (isCurrentlyCollapsed) {
+                        expandSidebar(true);
+                    } else {
+                        collapseSidebar(true);
+                    }
                 }
             });
+
+            // Close sidebar button (mobile)
+            const sidebarClose = document.getElementById('sidebar-close');
+            if (sidebarClose) {
+                sidebarClose.addEventListener('click', function() {
+                    collapseSidebar(true);
+                });
+            }
             
-            // Hover to expand when collapsed
+            // Hover to expand when collapsed (desktop only)
             sidebar.addEventListener('mouseenter', function() {
-                if (sidebar.classList.contains('sidebar-collapsed')) {
+                const isMobile = window.innerWidth < 1024;
+                if (!isMobile && sidebar.classList.contains('sidebar-collapsed')) {
                     clearTimeout(hoverTimeout);
                     // Temporarily expand on hover
                     sidebar.classList.remove('w-20');
@@ -211,7 +257,8 @@
             });
             
             sidebar.addEventListener('mouseleave', function() {
-                if (sidebar.classList.contains('sidebar-collapsed') && sidebar.classList.contains('sidebar-hover-expanded')) {
+                const isMobile = window.innerWidth < 1024;
+                if (!isMobile && sidebar.classList.contains('sidebar-collapsed') && sidebar.classList.contains('sidebar-hover-expanded')) {
                     // Collapse back after a short delay for smoother UX
                     hoverTimeout = setTimeout(function() {
                         sidebar.classList.remove('w-64', 'sidebar-hover-expanded');
@@ -221,9 +268,16 @@
             });
             
             function collapseSidebar(saveState = true) {
-                sidebar.classList.add('sidebar-collapsed');
-                sidebar.classList.remove('w-64', 'sidebar-hover-expanded');
-                sidebar.classList.add('w-20');
+                const isMobile = window.innerWidth < 1024;
+                if (isMobile) {
+                    sidebar.classList.add('-translate-x-full');
+                    sidebar.classList.remove('translate-x-0');
+                    overlay.classList.add('hidden');
+                } else {
+                    sidebar.classList.add('sidebar-collapsed');
+                    sidebar.classList.remove('w-64', 'sidebar-hover-expanded');
+                    sidebar.classList.add('w-20');
+                }
                 toggleIcon.classList.remove('fa-angle-left');
                 toggleIcon.classList.add('fa-angle-right');
                 if (saveState) {
@@ -232,13 +286,69 @@
             }
             
             function expandSidebar(saveState = true) {
-                sidebar.classList.remove('sidebar-collapsed', 'sidebar-hover-expanded');
-                sidebar.classList.remove('w-20');
-                sidebar.classList.add('w-64');
+                const isMobile = window.innerWidth < 1024;
+                if (isMobile) {
+                    sidebar.classList.remove('-translate-x-full');
+                    sidebar.classList.add('translate-x-0');
+                    // Ensure full width on mobile
+                    sidebar.classList.remove('w-20', 'sidebar-collapsed');
+                    sidebar.classList.add('w-64');
+                    overlay.classList.remove('hidden');
+                } else {
+                    sidebar.classList.remove('sidebar-collapsed', 'sidebar-hover-expanded');
+                    sidebar.classList.remove('w-20');
+                    sidebar.classList.add('w-64');
+                }
                 toggleIcon.classList.remove('fa-angle-right');
                 toggleIcon.classList.add('fa-angle-left');
                 if (saveState) {
                     localStorage.setItem('sidebar-collapsed', 'false');
+                }
+            }
+            
+            // Handle mobile overlay click
+            const overlay = document.getElementById('sidebar-overlay');
+            if (overlay) {
+                overlay.addEventListener('click', function() {
+                    collapseSidebar();
+                });
+            }
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                const isMobile = window.innerWidth < 1024;
+                const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
+                
+                if (isMobile) {
+                    // On mobile, always start collapsed (hidden)
+                    if (isCollapsed) {
+                        sidebar.classList.add('-translate-x-full');
+                        sidebar.classList.remove('translate-x-0');
+                        overlay.classList.add('hidden');
+                    }
+                } else {
+                    // On desktop, restore saved state
+                    sidebar.classList.remove('-translate-x-full', 'translate-x-0');
+                    if (isCollapsed) {
+                        collapseSidebar(false);
+                    } else {
+                        expandSidebar(false);
+                    }
+                }
+            });
+            
+            // Initialize based on screen size
+            const isMobile = window.innerWidth < 1024;
+            if (isMobile) {
+                sidebar.classList.add('-translate-x-full');
+                sidebar.classList.remove('translate-x-0');
+                overlay.classList.add('hidden');
+            } else {
+                const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
+                if (isCollapsed) {
+                    collapseSidebar(false);
+                } else {
+                    expandSidebar(false);
                 }
             }
         });

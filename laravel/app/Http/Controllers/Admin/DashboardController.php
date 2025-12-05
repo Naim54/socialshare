@@ -7,6 +7,7 @@ use App\Models\Visit;
 use App\Models\SocialShareClick;
 use App\Models\Article;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -14,10 +15,18 @@ class DashboardController extends Controller
     /**
      * Display the admin dashboard
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Date ranges
-        $now = Carbon::now();
+        try {
+            // Get date range from request, default to 7 days (only 7 or 30 allowed)
+            $dateRange = $request->input('range', '7');
+            if (!in_array($dateRange, ['7', '30'])) {
+                $dateRange = '7';
+            }
+            
+            // Date ranges
+        $now = Carbon::now()->endOfDay();
+        $startDate = $this->getStartDate($dateRange, $now);
         $last30Days = $now->copy()->subDays(30);
         $previous30Days = $last30Days->copy()->subDays(30);
         $lastMonth = $now->copy()->subMonth();
@@ -25,8 +34,8 @@ class DashboardController extends Controller
         $last7Days = $now->copy()->subDays(7);
         $previous7Days = $last7Days->copy()->subDays(7);
         // Calculate metrics from database
-        // Unique Visitors - Count distinct IP addresses
-        $currentUniqueVisitors = Visit::whereBetween('created_at', [$lastMonth, $now])
+        // Unique Visitors - Count distinct IP addresses (based on selected range)
+        $currentUniqueVisitors = Visit::whereBetween('created_at', [$startDate, $now])
             ->selectRaw('COUNT(DISTINCT ip_address) as count')
             ->value('count') ?? 0;
         $previousUniqueVisitors = Visit::whereBetween('created_at', [$previousMonth, $lastMonth])
@@ -41,8 +50,8 @@ class DashboardController extends Controller
             ->selectRaw('COUNT(DISTINCT device_type) as count')
             ->value('count') ?? 0;
 
-        // Total Shares
-        $currentShares = SocialShareClick::whereBetween('created_at', [$lastMonth, $now])->count();
+        // Total Shares (based on selected range)
+        $currentShares = SocialShareClick::whereBetween('created_at', [$startDate, $now])->count();
         $previousShares = SocialShareClick::whereBetween('created_at', [$previousMonth, $lastMonth])->count();
         $sharesChange = $previousShares > 0 
             ? (($currentShares - $previousShares) / $previousShares) * 100 
@@ -80,48 +89,61 @@ class DashboardController extends Controller
             ],
         ];
 
-        // Shares Trend (Last 30 Days) - Group by day
+        // Shares Trend - Group by day (based on selected range)
         $sharesByDay = SocialShareClick::select(
                 DB::raw('DATE(created_at) as date'),
                 DB::raw('COUNT(*) as count')
             )
-            ->whereBetween('created_at', [$last30Days, $now])
+            ->whereBetween('created_at', [$startDate, $now])
             ->groupBy('date')
             ->orderBy('date')
             ->get();
 
-        // Generate labels and values (showing every 5 days for cleaner display)
+        // Generate labels and values based on date range (7 or 30 days only)
         $labels = [];
         $values = [];
+        $daysDiff = $startDate->diffInDays($now);
+        
+        // For 7 or 30 days, show daily data
         $dayCount = 0;
+        $step = $daysDiff <= 7 ? 1 : 2;
+        
         foreach ($sharesByDay as $day) {
             $dayCount++;
-            if ($dayCount % 5 == 1 || $dayCount == $sharesByDay->count()) {
+            if ($dayCount % $step == 1 || $dayCount == $sharesByDay->count()) {
                 $labels[] = Carbon::parse($day->date)->format('M d');
                 $values[] = $day->count;
             }
         }
-
+        
         // If no data, show placeholder
         if (empty($labels)) {
-            $labels = ['Day 1', 'Day 5', 'Day 10', 'Day 15', 'Day 20', 'Day 25', 'Day 30'];
-            $values = [0, 0, 0, 0, 0, 0, 0];
+            $placeholderDays = $daysDiff <= 7 ? 7 : 30;
+            $labels = [];
+            $values = [];
+            for ($i = 0; $i < $placeholderDays; $i += $step) {
+                $labels[] = 'Day ' . ($i + 1);
+                $values[] = 0;
+            }
         }
 
-        $totalShares30Days = SocialShareClick::whereBetween('created_at', [$last30Days, $now])->count();
-        $avgDaily = $totalShares30Days > 0 ? round($totalShares30Days / 30, 0) : 0;
+        $totalShares = SocialShareClick::whereBetween('created_at', [$startDate, $now])->count();
+        $avgDaily = $daysDiff > 0 ? round($totalShares / $daysDiff, 0) : 0;
 
         $sharesTrendData = [
             'labels' => $labels,
             'values' => $values,
-            'total_shares' => $totalShares30Days,
+            'total_shares' => $totalShares,
             'avg_daily' => $avgDaily,
         ];
 
-        // Top Categories Shared
-        $categoryShares = SocialShareClick::join('articles', 'socialdata.article_id', '=', 'articles.id')
+        // Top Categories Shared (based on selected range)
+        $categorySharesQuery = SocialShareClick::join('articles', 'socialdata.article_id', '=', 'articles.id')
             ->select('articles.category', DB::raw('COUNT(*) as shares'))
             ->whereNotNull('socialdata.article_id')
+            ->whereBetween('socialdata.created_at', [$startDate, $now]);
+        
+        $categoryShares = $categorySharesQuery
             ->groupBy('articles.category')
             ->orderBy('shares', 'desc')
             ->limit(5)
@@ -170,12 +192,12 @@ class DashboardController extends Controller
             $topCategoriesShared = [];
         }
 
-        // Daily Shares (Last 7 days - for mini chart in Shares card)
+        // Daily Shares (for mini chart in Shares card - based on selected range)
         $dailyShares = SocialShareClick::select(
                 DB::raw('DAYOFWEEK(created_at) as day'),
                 DB::raw('COUNT(*) as count')
             )
-            ->whereBetween('created_at', [$last7Days, $now])
+            ->whereBetween('created_at', [$startDate, $now])
             ->groupBy('day')
             ->orderBy('day')
             ->get();
@@ -195,15 +217,16 @@ class DashboardController extends Controller
             'values' => $dayValues,
         ];
 
-        // Shares by Platform (for donut chart)
+        // Shares by Platform (for donut chart - based on selected range)
         $platformShares = SocialShareClick::select('platform', DB::raw('COUNT(*) as shares'))
+            ->whereBetween('created_at', [$startDate, $now])
             ->groupBy('platform')
             ->orderBy('shares', 'desc')
             ->get();
 
         $platformMap = [
             'whatsapp' => ['label' => 'WhatsApp', 'color' => 'rgba(34, 197, 94, 1)'],
-            'telegram' => ['label' => 'Telegram', 'color' => 'rgba(59, 130, 246, 1)'],
+            'telegram' => ['label' => 'Telegram', 'color' => 'rgba(14, 165, 233, 1)'], // Changed to cyan to be more distinct from Facebook
             'twitter' => ['label' => 'X', 'color' => 'rgba(96, 165, 250, 1)'], // Lighter blue for better dark mode visibility
             'x' => ['label' => 'X', 'color' => 'rgba(96, 165, 250, 1)'], // Handle both 'x' and 'twitter'
             'facebook' => ['label' => 'Facebook', 'color' => 'rgba(37, 99, 235, 1)'],
@@ -228,7 +251,7 @@ class DashboardController extends Controller
             $values = [0, 0, 0, 0, 0];
             $colors = [
                 'rgba(34, 197, 94, 1)',
-                'rgba(59, 130, 246, 1)',
+                'rgba(14, 165, 233, 1)', // Changed to cyan for Telegram
                 'rgba(96, 165, 250, 1)', // Lighter blue for X platform
                 'rgba(37, 99, 235, 1)',
                 'rgba(249, 115, 22, 1)',
@@ -241,12 +264,12 @@ class DashboardController extends Controller
             'colors' => $colors,
         ];
 
-        // Daily Visitors (Last 7 days - for mini chart in Visitors card)
+        // Daily Visitors (for mini chart in Visitors card - based on selected range)
         $dailyVisitors = Visit::select(
                 DB::raw('DAYOFWEEK(created_at) as day'),
                 DB::raw('COUNT(DISTINCT ip_address) as count')
             )
-            ->whereBetween('created_at', [$last7Days, $now])
+            ->whereBetween('created_at', [$startDate, $now])
             ->groupBy('day')
             ->orderBy('day')
             ->get();
@@ -264,9 +287,10 @@ class DashboardController extends Controller
             'values' => $visitorDayValues,
         ];
 
-        // Device Types (from visits)
+        // Device Types (from visits - based on selected range)
         $deviceBreakdown = Visit::select('device_type', DB::raw('COUNT(*) as count'))
             ->whereNotNull('device_type')
+            ->whereBetween('created_at', [$startDate, $now])
             ->groupBy('device_type')
             ->orderBy('count', 'desc')
             ->get();
@@ -305,7 +329,24 @@ class DashboardController extends Controller
             $deviceTypes = [];
         }
 
-        return view('admin.dashboard', compact('metrics', 'sharesTrendData', 'topCategoriesShared', 'dailySharesData', 'dailyVisitorsData', 'deviceTypes', 'sharesByPlatform'));
+        $response = response()->view('admin.dashboard', compact('metrics', 'sharesTrendData', 'topCategoriesShared', 'dailySharesData', 'dailyVisitorsData', 'deviceTypes', 'sharesByPlatform', 'dateRange'));
+        
+        // Add cache control headers to prevent back button from showing cached dashboard
+        $response->header('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+        $response->header('Pragma', 'no-cache');
+        $response->header('Expires', '0');
+        
+        return $response;
+        } catch (\Exception $e) {
+            \Log::error('Dashboard error: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            
+            return redirect()->route('admin.login')
+                ->with('error', 'An error occurred while loading the dashboard. Please try again.')
+                ->header('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0')
+                ->header('Pragma', 'no-cache')
+                ->header('Expires', '0');
+        }
     }
 
     /**
@@ -313,6 +354,7 @@ class DashboardController extends Controller
      */
     public function exportSharesTrend()
     {
+        try {
         $now = Carbon::now();
         $last30Days = $now->copy()->subDays(30);
         
@@ -346,6 +388,11 @@ class DashboardController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+        } catch (\Exception $e) {
+            \Log::error('Export shares trend error: ' . $e->getMessage());
+            return redirect()->route('admin.dashboard')
+                ->with('error', 'Failed to export shares trend data.');
+        }
     }
 
     /**
@@ -353,6 +400,7 @@ class DashboardController extends Controller
      */
     public function exportTopCategories()
     {
+        try {
         $categoryShares = SocialShareClick::join('articles', 'socialdata.article_id', '=', 'articles.id')
             ->select('articles.category', DB::raw('COUNT(*) as shares'))
             ->whereNotNull('socialdata.article_id')
@@ -386,6 +434,11 @@ class DashboardController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+        } catch (\Exception $e) {
+            \Log::error('Export top categories error: ' . $e->getMessage());
+            return redirect()->route('admin.dashboard')
+                ->with('error', 'Failed to export top categories data.');
+        }
     }
 
     /**
@@ -393,6 +446,7 @@ class DashboardController extends Controller
      */
     public function exportSharesByPlatform()
     {
+        try {
         $platformShares = SocialShareClick::select('platform', DB::raw('COUNT(*) as shares'))
             ->groupBy('platform')
             ->orderBy('shares', 'desc')
@@ -426,6 +480,11 @@ class DashboardController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+        } catch (\Exception $e) {
+            \Log::error('Export shares by platform error: ' . $e->getMessage());
+            return redirect()->route('admin.dashboard')
+                ->with('error', 'Failed to export shares by platform data.');
+        }
     }
 
     /**
@@ -433,6 +492,7 @@ class DashboardController extends Controller
      */
     public function exportDailyVisitors()
     {
+        try {
         $now = Carbon::now();
         $last7Days = $now->copy()->subDays(7);
         
@@ -468,6 +528,11 @@ class DashboardController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+        } catch (\Exception $e) {
+            \Log::error('Export daily visitors error: ' . $e->getMessage());
+            return redirect()->route('admin.dashboard')
+                ->with('error', 'Failed to export daily visitors data.');
+        }
     }
 
     /**
@@ -475,6 +540,7 @@ class DashboardController extends Controller
      */
     public function exportDeviceTypes()
     {
+        try {
         $deviceBreakdown = Visit::select('device_type', DB::raw('COUNT(*) as count'))
             ->whereNotNull('device_type')
             ->groupBy('device_type')
@@ -506,6 +572,235 @@ class DashboardController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+        } catch (\Exception $e) {
+            \Log::error('Export device types error: ' . $e->getMessage());
+            return redirect()->route('admin.dashboard')
+                ->with('error', 'Failed to export device types data.');
+        }
+    }
+
+    /**
+     * Get chart data via AJAX based on date range
+     */
+    public function getChartData(Request $request)
+    {
+        try {
+            // Only allow 7 or 30 days
+            $dateRange = $request->input('range', '7');
+            if (!in_array($dateRange, ['7', '30'])) {
+                $dateRange = '7';
+            }
+            $now = Carbon::now()->endOfDay();
+            $startDate = $this->getStartDate($dateRange, $now);
+            
+            // Shares Trend
+            $sharesByDay = SocialShareClick::select(
+                    DB::raw('DATE(created_at) as date'),
+                    DB::raw('COUNT(*) as count')
+                )
+                ->whereBetween('created_at', [$startDate, $now])
+                ->groupBy('date')
+                ->orderBy('date')
+                ->get();
+
+            $labels = [];
+            $values = [];
+            $daysDiff = $startDate->diffInDays($now);
+            
+            // For 7 or 30 days, show daily data
+            $dayCount = 0;
+            $step = $daysDiff <= 7 ? 1 : 2;
+            
+            foreach ($sharesByDay as $day) {
+                $dayCount++;
+                if ($dayCount % $step == 1 || $dayCount == $sharesByDay->count()) {
+                    $labels[] = Carbon::parse($day->date)->format('M d');
+                    $values[] = $day->count;
+                }
+            }
+
+            $totalShares = SocialShareClick::whereBetween('created_at', [$startDate, $now])->count();
+            $avgDaily = $daysDiff > 0 ? round($totalShares / $daysDiff, 0) : 0;
+
+            // Shares by Platform
+            $platformShares = SocialShareClick::select('platform', DB::raw('COUNT(*) as shares'))
+                ->whereBetween('created_at', [$startDate, $now])
+                ->groupBy('platform')
+                ->orderBy('shares', 'desc')
+                ->get();
+
+            $platformMap = [
+                'whatsapp' => ['label' => 'WhatsApp', 'color' => 'rgba(34, 197, 94, 1)'],
+                'telegram' => ['label' => 'Telegram', 'color' => 'rgba(14, 165, 233, 1)'],
+                'twitter' => ['label' => 'X', 'color' => 'rgba(96, 165, 250, 1)'],
+                'x' => ['label' => 'X', 'color' => 'rgba(96, 165, 250, 1)'],
+                'facebook' => ['label' => 'Facebook', 'color' => 'rgba(37, 99, 235, 1)'],
+                'email' => ['label' => 'Mail', 'color' => 'rgba(249, 115, 22, 1)'],
+            ];
+
+            $platformLabels = [];
+            $platformValues = [];
+            $platformColors = [];
+
+            foreach ($platformShares as $platform) {
+                if (isset($platformMap[$platform->platform])) {
+                    $platformLabels[] = $platformMap[$platform->platform]['label'];
+                    $platformValues[] = $platform->shares;
+                    $platformColors[] = $platformMap[$platform->platform]['color'];
+                }
+            }
+
+            // Daily Visitors
+            $visitors = Visit::select(
+                    DB::raw('DAYOFWEEK(created_at) as day'),
+                    DB::raw('COUNT(DISTINCT ip_address) as count')
+                )
+                ->whereBetween('created_at', [$startDate, $now])
+                ->groupBy('day')
+                ->orderBy('day')
+                ->get();
+
+            $visitorDayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+            $visitorDayValues = array_fill(0, 7, 0);
+            
+            foreach ($visitors as $day) {
+                $index = ($day->day - 1) % 7;
+                $visitorDayValues[$index] = $day->count;
+            }
+
+            $dailyVisitors = [
+                'labels' => $visitorDayLabels,
+                'values' => $visitorDayValues,
+            ];
+
+            // Top Categories
+            $categoryShares = SocialShareClick::join('articles', 'socialdata.article_id', '=', 'articles.id')
+                ->select('articles.category', DB::raw('COUNT(*) as shares'))
+                ->whereNotNull('socialdata.article_id')
+                ->whereBetween('socialdata.created_at', [$startDate, $now])
+                ->groupBy('articles.category')
+                ->orderBy('shares', 'desc')
+                ->limit(5)
+                ->get();
+
+            $categoryColors = [
+                'tech' => 'bg-blue-500',
+                'politics' => 'bg-red-500',
+                'business' => 'bg-green-500',
+                'sports' => 'bg-orange-500',
+                'health' => 'bg-purple-500',
+                'economy' => 'bg-yellow-500',
+                'nation' => 'bg-indigo-500',
+                'world' => 'bg-cyan-500',
+            ];
+
+            $categoryIcons = [
+                'tech' => 'fa-microchip',
+                'politics' => 'fa-landmark',
+                'business' => 'fa-briefcase',
+                'sports' => 'fa-futbol',
+                'health' => 'fa-heartbeat',
+                'economy' => 'fa-chart-line',
+                'nation' => 'fa-flag',
+                'world' => 'fa-globe',
+            ];
+
+            $topCategories = $categoryShares->map(function ($item) use ($categoryColors, $categoryIcons) {
+                $category = $item->category;
+                return [
+                    'name' => ucfirst($category),
+                    'description' => ucfirst($category) . ' News',
+                    'shares' => $item->shares,
+                    'color' => $categoryColors[$category] ?? 'bg-gray-500',
+                    'icon' => $categoryIcons[$category] ?? 'fa-newspaper'
+                ];
+            })->toArray();
+
+            // Device Types
+            $deviceBreakdown = Visit::select('device_type', DB::raw('COUNT(*) as count'))
+                ->whereNotNull('device_type')
+                ->whereBetween('created_at', [$startDate, $now])
+                ->groupBy('device_type')
+                ->orderBy('count', 'desc')
+                ->get();
+
+            $deviceTypeMap = [
+                'desktop' => ['name' => 'Desktop', 'description' => 'Windows & Mac', 'color' => 'bg-blue-500', 'icon' => 'fa-desktop'],
+                'mobile' => ['name' => 'Mobile', 'description' => 'Smartphones', 'color' => 'bg-green-500', 'icon' => 'fa-mobile-alt'],
+                'tablet' => ['name' => 'Tablet', 'description' => 'iPad & Android', 'color' => 'bg-purple-500', 'icon' => 'fa-tablet-alt'],
+            ];
+
+            $deviceTypes = $deviceBreakdown->map(function ($item) use ($deviceTypeMap) {
+                $deviceType = strtolower($item->device_type);
+                $mapped = $deviceTypeMap[$deviceType] ?? [
+                    'name' => ucfirst($item->device_type),
+                    'description' => ucfirst($item->device_type),
+                    'color' => 'bg-gray-500',
+                    'icon' => 'fa-desktop'
+                ];
+                
+                return [
+                    'name' => $mapped['name'],
+                    'description' => $mapped['description'],
+                    'count' => $item->count,
+                    'color' => $mapped['color'],
+                    'icon' => $mapped['icon']
+                ];
+            })->toArray();
+
+            // Metrics
+            $uniqueVisitors = Visit::whereBetween('created_at', [$startDate, $now])
+                ->selectRaw('COUNT(DISTINCT ip_address) as count')
+                ->value('count') ?? 0;
+
+            $totalShares = SocialShareClick::whereBetween('created_at', [$startDate, $now])->count();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'sharesTrend' => [
+                        'labels' => $labels,
+                        'values' => $values,
+                        'total_shares' => $totalShares,
+                        'avg_daily' => $avgDaily,
+                    ],
+                    'sharesByPlatform' => [
+                        'labels' => $platformLabels,
+                        'values' => $platformValues,
+                        'colors' => $platformColors,
+                    ],
+                    'dailyVisitors' => $dailyVisitors,
+                    'topCategories' => $topCategories,
+                    'deviceTypes' => $deviceTypes,
+                    'metrics' => [
+                        'unique_visitors' => $uniqueVisitors,
+                        'total_shares' => $totalShares,
+                    ],
+                ]
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Get chart data error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch chart data.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get start date based on range (only 7 or 30 days)
+     */
+    private function getStartDate($range, $now)
+    {
+        switch ($range) {
+            case '30':
+                // Start from 30 days ago at the beginning of that day
+                return $now->copy()->subDays(30)->startOfDay();
+            case '7':
+            default:
+                // Start from 7 days ago at the beginning of that day (default)
+                return $now->copy()->subDays(7)->startOfDay();
+        }
     }
 }
 

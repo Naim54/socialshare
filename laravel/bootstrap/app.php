@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use App\Models\ApiToken;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -19,6 +20,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth.api' => \App\Http\Middleware\AuthenticateApi::class,
             'track.visit' => \App\Http\Middleware\TrackVisit::class,
         ]);
+        
+        // Redirect unauthenticated users to admin.login (fallback for custom Authenticate middleware)
+        $middleware->redirectGuestsTo(fn (Request $request) => route('admin.login'));
         
         // Apply visit tracking to web routes
         $middleware->web(append: [

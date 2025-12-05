@@ -35,6 +35,7 @@ Route::get('/admin/debug', function () {
 
 Route::middleware(['auth:admin'])->group(function () {
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/admin/api/chart-data', [DashboardController::class, 'getChartData'])->name('admin.chart-data');
     
     Route::get('/admin/api/social-share/analytics', [SocialShareAnalyticsController::class, 'index'])->name('admin.social-share.analytics');
     
